@@ -1,0 +1,1971 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f3ea">
+<title>バイオ人生ゲーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f3ea; --card:#fffdf8; --ink:#23262b; --sub:#6b6f76; --line:#e6dfd0;
+  --accent:#0f766e; --accent-d:#0b5b55; --accent-l:#d9efe9;
+  --good:#b7791f; --bad:#c53030; --pos:#1f8a5b; --neg:#c53030;
+  --round:'Zen Maru Gothic', -apple-system, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+  font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+#app{max-width:480px;margin:0 auto;min-height:100vh;padding:0 16px calc(32px + env(safe-area-inset-bottom))}
+h1,h2,h3,h4{font-family:var(--round);line-height:1.35;margin:0}
+h2{font-size:22px;font-weight:700}
+p{margin:0}
+.muted{color:var(--sub);font-size:14px}
+.fine{color:var(--sub);font-size:12px;margin-top:12px}
+.center{text-align:center}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+
+/* ボタン */
+.btn{display:block;width:100%;border:0;border-radius:16px;padding:16px;font:700 17px var(--round);margin-top:20px;cursor:pointer;
+  transition:transform .08s, opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:0 4px 0 var(--accent-d)}
+.btn.primary:disabled{opacity:.4;box-shadow:none}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent);margin-top:12px}
+
+/* タイトル */
+.hero{padding:48px 4px 24px;text-align:center}
+.badge{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-l);border-radius:999px;padding:4px 12px}
+.logo{font-size:44px;font-weight:900;letter-spacing:.04em;margin:18px 0 12px;line-height:1.15;
+  background:linear-gradient(135deg,#0f766e,#2f9e6b 50%,#c98a00);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--sub)}
+.howto{list-style:none;padding:0;margin:24px 0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.howto li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:14px;font-weight:600}
+.howto b{margin-right:6px}
+.field{display:block;text-align:left;margin-top:8px}
+.field span{font-size:13px;font-weight:700;color:var(--sub)}
+.field input{width:100%;margin-top:4px;padding:14px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:17px;color:var(--ink)}
+.field input:focus{outline:none;border-color:var(--accent)}
+
+/* 画面共通 */
+.screen{padding-top:20px}
+.step{font:700 13px var(--round);color:var(--accent);letter-spacing:.08em;margin-bottom:4px}
+.screen > h2{margin-bottom:8px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px;box-shadow:0 2px 0 var(--line)}
+.card h3{font-size:16px;margin-bottom:8px}
+
+/* 価値観 */
+.opt{display:flex;align-items:center;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px;
+  font:inherit;font-weight:600;text-align:left;cursor:pointer;color:var(--ink)}
+.opt:active{border-color:var(--c)}
+.opt-ic{font-size:24px}
+
+/* 進路カード */
+.card-opt{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;color:var(--ink);font:inherit}
+.card-opt.sel{border-color:var(--accent);background:#f1faf7;box-shadow:0 0 0 3px var(--accent-l)}
+.co-head{display:flex;align-items:center;gap:8px}
+.co-ic{font-size:24px}
+.co-name{font:700 16px var(--round)}
+.co-desc{font-size:13px;color:var(--sub);margin:6px 0 8px;line-height:1.6}
+.co-stars{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12px}
+.co-stars span{display:flex;justify-content:space-between}
+.co-stars b{color:#e0a100;letter-spacing:1px}
+.co-stars em{color:#e3ddcf;font-style:normal}
+.sticky-bottom{position:sticky;bottom:0;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%)}
+
+/* 上部バー */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line);margin:0 -16px;padding-left:16px;padding-right:16px}
+.top-row{display:flex;align-items:baseline;gap:10px}
+.age{font:900 26px var(--round);color:var(--accent)}
+.age small{font-size:13px;font-weight:700;margin-left:2px}
+.job{font-size:13px;font-weight:600;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;text-align:right}
+.dots{display:flex;gap:4px;margin:6px 0 8px}
+.dots i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.dots i.done{background:var(--accent)}
+.dots i.now{background:#7cc4b6}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px 4px 4px;min-width:0}
+.stat-top{display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.stat-ic{font-size:13px}
+.stat-v{font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.02em}
+.stat-bar{height:4px;background:#efe9dc;border-radius:2px;margin:3px 0 2px;overflow:hidden}
+.stat-bar i{display:block;height:100%;background:var(--c);border-radius:2px;transition:width .5s}
+.stat-l{font-size:10px;color:var(--sub);text-align:center;white-space:nowrap}
+
+/* ステージ開始 */
+.stage-hero{text-align:center;padding:12px 0 4px}
+.big-age{font:900 44px var(--round);color:var(--accent);margin:2px 0}
+.stage-name{font:700 16px var(--round);color:var(--sub)}
+.ledger{list-style:none;padding:0;margin:0}
+.ledger li{display:flex;gap:8px;align-items:center;padding:8px 0;border-top:1px dashed var(--line);font-size:14px}
+.ledger li:first-child{border-top:0}
+.li-t{flex:1}
+.ledger b{white-space:nowrap}
+
+/* ルーレット */
+.legend{display:flex;justify-content:center;gap:6px;margin:10px 0;flex-wrap:wrap}
+.lg{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+.lg.bad{background:#f8d7d5;color:#a1312b}
+.lg.normal{background:#dcebe6;color:#2d6b5c}
+.lg.good{background:#ffe6ae;color:#8a5a00}
+.wheel-wrap{position:relative;width:260px;max-width:78vw;margin:16px auto 0;aspect-ratio:1}
+.wheel{width:100%;height:100%;transition:transform 3.2s cubic-bezier(.12,.72,.12,1)}
+.wheel-svg{width:100%;height:100%;display:block;filter:drop-shadow(0 4px 0 rgba(0,0,0,.08))}
+.wnum{font:900 20px var(--round);fill:#23262b}
+.pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;z-index:2;
+  border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ink)}
+.spinout{min-height:64px;margin-top:14px}
+.spin-res{display:inline-flex;align-items:center;gap:10px;font:700 20px var(--round);padding:8px 18px;border-radius:999px;animation:pop .35s}
+.spin-res b{font-size:30px}
+.spin-res.bad{background:#f8d7d5;color:#a1312b}
+.spin-res.normal{background:#dcebe6;color:#2d6b5c}
+.spin-res.good{background:#ffe6ae;color:#8a5a00}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* イベント */
+.luck{font:700 13px var(--round);border-radius:10px;padding:6px 12px;display:inline-block}
+.luck.bad{background:#f8d7d5;color:#a1312b}
+.luck.normal{background:#dcebe6;color:#2d6b5c}
+.luck.good{background:#ffe6ae;color:#8a5a00}
+.event h2,.result h2{font-size:21px}
+.ev-age{font-size:12px;font-weight:700;color:var(--sub)}
+.ev-text{margin-top:10px}
+.ask{font:700 15px var(--round);margin-top:18px;color:var(--sub)}
+.choice{display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:#fff;border:2px solid var(--line);border-left:6px solid var(--accent);
+  border-radius:14px;padding:14px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;box-shadow:0 2px 0 var(--line)}
+.choice:active{background:#f1faf7}
+.ch-t{font-weight:700;font-size:16px}
+.hint{font-size:12px;color:var(--sub);background:#f3efe5;border-radius:6px;padding:1px 8px}
+
+/* 結果 */
+.picked{font-weight:700;color:var(--accent);margin-top:8px}
+.res-text{margin-top:10px}
+.roll{margin-top:10px;font-size:14px;border-radius:10px;padding:8px 12px}
+.roll.ok{background:#e1f3ea} .roll.ng{background:#fbe4e2}
+.roll small{display:block;color:var(--sub);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:13px;border-radius:999px;padding:4px 10px;animation:pop .35s both}
+.chip.up{background:#e1f3ea;color:#17603f}
+.chip.down{background:#fbe4e2;color:#9b2c2c}
+.notes{margin:12px 0 0;padding-left:18px;font-size:13px;color:var(--sub)}
+
+/* エンディング */
+.ending{padding-top:24px}
+.result-card{background:#fff;border-radius:24px;overflow:hidden;border:1px solid var(--line);box-shadow:0 6px 0 var(--line)}
+.rc-head{background:linear-gradient(135deg,#0f766e,#2f9e6b);color:#fff;padding:20px 18px 18px;text-align:center}
+.rc-name{font-size:13px;opacity:.9}
+.rc-kicker{font-size:11px;letter-spacing:.2em;opacity:.8;margin-top:8px}
+.rc-title{font:900 24px var(--round);margin:2px 0 6px;text-wrap:balance;word-break:auto-phrase}
+.rc-desc{font-size:13px;opacity:.95;line-height:1.6}
+.rc-score{text-align:center;padding:16px 0 0}
+.rc-score .num{font:900 64px var(--round);color:var(--accent);line-height:1}
+.rc-score .unit{font:900 22px var(--round);color:var(--accent);margin-left:2px}
+.rc-score small{display:block;font-size:12px;color:var(--sub)}
+.radar{width:100%;max-width:300px;display:block;margin:0 auto}
+.rl{font-size:11px;font-weight:700;fill:#4b4f56}
+.rv-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:0 10px}
+.rv{display:flex;flex-direction:column;align-items:center;background:#faf7f0;border-radius:10px;padding:6px 2px;border-top:3px solid var(--c)}
+.rv b{font-size:14px;font-variant-numeric:tabular-nums}
+.rv small{font-size:10px;color:var(--sub)}
+.rv em{font-style:normal;font-size:11px;font-weight:700;color:var(--c)}
+.rc-path{text-align:center;font-size:13px;font-weight:700;padding:12px 12px 0}
+.rc-foot{text-align:center;font-size:11px;color:var(--sub);padding:8px 0 14px;letter-spacing:.1em}
+.shot-note{text-align:center;font-weight:700;margin-top:14px;font-size:14px}
+.sec{margin-top:28px}
+.sec h3{font-size:18px;border-left:5px solid var(--accent);padding-left:10px;margin-bottom:10px}
+.fb{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}
+.fb h4{font-size:15px;margin-bottom:4px}
+.fb p{font-size:14px}
+.timeline{list-style:none;padding:0;margin:0;border-left:3px solid var(--accent-l);margin-left:22px}
+.timeline li{position:relative;padding:6px 0 6px 14px;font-size:14px;display:flex;gap:10px}
+.timeline li::before{content:'';position:absolute;left:-8px;top:14px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.tl-age{font-weight:800;color:var(--accent);min-width:3.2em;font-variant-numeric:tabular-nums}
+.tips{padding-left:20px;margin:0;font-size:14px}
+.tips li{margin:6px 0}
+.q ol{padding-left:20px;margin:0;background:#fff8e6;border:1px solid #f1dfae;border-radius:14px;padding:14px 14px 14px 34px;font-size:15px}
+.q li{margin:6px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// =====================================================================
+//  データ（ここを編集すれば、文言・数値・イベントを変更できます）
+// ---------------------------------------------------------------------
+//  パラメータ：money（資産・万円）/ health / skill / bond / joy（0〜100）
+//  イベントの項目
+//    pool    : どの場面で出るか（下の STAGES と luck_good / luck_normal /
+//              luck_bad / followup）
+//    careers : その職業のときだけ出る（省略すると全員）
+//    when    : 出る条件（s.flags / s.stats / s.stage / s.career が使える）
+//    weight  : 出やすさ（省略時 1）
+//    options : 選択肢。省略すると、そのまま effect が反映される
+//      effect : パラメータの変化     set / inc : フラグの変更
+//      career : 職業を変える         jobChange : 同じ職種で転職（退職金精算）
+//      roll   : 成功・失敗が運で決まる（stat が高いほど成功しやすい）
+//      ethics : 'comply' | 'speak' | 'formal'（倫理イベントでの選択）
+//    tip     : 結果画面の「知っておきたいこと」に載る豆知識
+// =====================================================================
+
+const VALUES = {
+  money:  'お金・経済的な安定',
+  health: '心と体の健康',
+  skill:  '専門性・成長',
+  bond:   '家族や仲間とのつながり',
+  joy:    'やりがい・好きなこと',
+};
+
+const CAREERS = {
+  pharma:  { name:'製薬・バイオ研究職', short:'研究職', icon:'🧪', start:true, income:300, retire:1500,
+             desc:'新薬や新技術の研究開発。成果へのプレッシャーは大きいが、専門性とやりがいが伸びる。',
+             init:{ skill:10, joy:5 }, stars:{ 収入:4, 安定:3, 専門性:5, 自由度:2 } },
+  food:    { name:'食品メーカー（品質管理・開発）', short:'食品メーカー', icon:'🍱', start:true, income:230, retire:1100,
+             desc:'毎日の食卓を支える仕事。安定しやすいが、品質と安全を守る責任は重い。',
+             init:{ skill:5, health:5, bond:5 }, stars:{ 収入:3, 安定:4, 専門性:3, 自由度:3 } },
+  cosme:   { name:'化粧品メーカー', short:'化粧品メーカー', icon:'💄', start:true, income:240, retire:1000,
+             desc:'研究・開発から企画・マーケティングまで。流行の変化が速く、発想力が活きる。',
+             init:{ skill:5, joy:10 }, stars:{ 収入:3, 安定:3, 専門性:3, 自由度:4 } },
+  cro:     { name:'臨床検査・CRO（治験）', short:'CRO', icon:'🩺', start:true, income:260, retire:900,
+             desc:'医薬品の開発や医療の検査を支える。経験を積めば転職市場で強い。',
+             init:{ skill:10 }, stars:{ 収入:3, 安定:4, 専門性:4, 自由度:3 } },
+  civil:   { name:'公務員（技術職）', short:'公務員', icon:'🏛️', start:true, income:230, retire:1800,
+             desc:'保健所や試験研究機関で地域の安全を守る。収入は堅実で、数年ごとに異動がある。',
+             init:{ health:5, bond:5 }, stars:{ 収入:3, 安定:5, 専門性:3, 自由度:2 } },
+  other:   { name:'異業種（IT・営業など）', short:'異業種', icon:'💼', start:true, income:270, retire:900, spread:120,
+             desc:'バイオの外の世界へ。収入が伸びる可能性はあるが、学んだ専門からは離れる。',
+             init:{ skill:-5, joy:5 }, stars:{ 収入:4, 安定:2, 専門性:2, 自由度:4 } },
+  grad:    { name:'大学院進学（修士課程）', short:'大学院', icon:'🎓', start:true, income:-150, retire:0, noTenure:true,
+             desc:'「高度専門士」の称号で大学院へ。研究を深め、研究者への道も開ける。学費と時間がかかる。',
+             init:{ skill:15, joy:5 }, stars:{ 収入:1, 安定:2, 専門性:5, 自由度:4 } },
+  // ↓ 途中から選べる道
+  doctor:  { name:'大学院（博士課程）', short:'博士課程', icon:'📚', income:-80, retire:0, noTenure:true },
+  academia:{ name:'研究者（大学・研究機関）', short:'研究者', icon:'🔭', income:170, retire:900 },
+  startup: { name:'起業家（バイオベンチャー）', short:'起業家', icon:'🚀', income:80, retire:0, spread:300, noTenure:true },
+  indep:   { name:'独立・フリーランス', short:'フリーランス', icon:'🧭', income:120, retire:0, spread:80, noTenure:true },
+  retired: { name:'リタイア生活', short:'リタイア', icon:'🌿', income:-150, retire:0, noTenure:true },
+};
+
+// ステージ（約5年ごと）と、各ステージで出る選択イベントの種類
+const STAGES = [
+  { age:[22,25], name:'社会人デビュー', pools:['first_year','career_start'] },
+  { age:[25,30], name:'20代後半',       pools:['career_mid','life_partner'] },
+  { age:[30,35], name:'30代前半',       pools:['ethics','family'] },
+  { age:[35,40], name:'30代後半',       pools:['career_path','midlife'] },
+  { age:[40,45], name:'40代前半',       pools:['midlife'] },
+  { age:[45,50], name:'40代後半',       pools:['care','health'] },
+  { age:[50,55], name:'50代前半',       pools:['late_career','health'] },
+  { age:[55,60], name:'50代後半',       pools:['pre_retire','pre_retire'] },
+  { age:[60,65], name:'60代前半',       pools:['second_life'] },
+];
+
+const COMPANY = ['pharma','food','cosme','cro','other'];
+const LAB = ['pharma','academia','doctor','grad'];
+
+const EVENTS = [
+
+
+// ===== 社会人1年目（ステージ1の追加イベント）=====
+{ id:'fy_bonus', pool:'first_year', when:s=>s.career!=='grad',
+  title:'初めてのボーナス',
+  text:'社会人になって初めてのボーナスが出た。何に使う？',
+  options:[
+    { label:'親にプレゼントを贈る', effect:{ bond:8, money:-10 },
+      result:'「立派になったね」と、親がうれしそうだった。', log:'初ボーナスで親にプレゼント' },
+    { label:'貯金・積立を始める', effect:{ money:40 },
+      result:'給料が出たら先に貯める。小さな習慣が将来を変える。', log:'積立貯金を始める',
+      tip:'給料が入ったら先に一定額を貯める「先取り貯蓄」は、お金を貯める基本の方法です。' },
+    { label:'自分へのご褒美に旅行する', effect:{ joy:8, money:-30 },
+      result:'がんばった自分へのご褒美。いい思い出になった。', log:'初ボーナスで旅行' },
+    { label:'資格の勉強に使う', effect:{ skill:5, money:-20 },
+      result:'自分への投資。参考書と講座で学びはじめた。', log:'初ボーナスを自己投資に' },
+  ] },
+{ id:'fy_living', pool:'first_year',
+  title:'どこに住む？',
+  text:'新生活のスタート。住む場所を決めよう。',
+  options:[
+    { label:'職場の近くで一人暮らし', effect:{ health:3, joy:5, money:-80 },
+      result:'通勤はラク。家事は全部自分でやることに。', log:'一人暮らしを始める' },
+    { label:'実家から通う', effect:{ money:80, bond:3, joy:-2 },
+      result:'お金は貯まる。通勤時間は長いけれど。', log:'実家から通う' },
+    { label:'友人とシェアハウス', effect:{ bond:8, joy:4, money:-20 },
+      result:'にぎやかな毎日。家事の分担でもめることも。', log:'友人とシェアハウス' },
+  ] },
+{ id:'fy_holiday', pool:'first_year',
+  title:'休日の過ごし方',
+  text:'慣れない毎日で、休日はくたくた。どう過ごす？',
+  options:[
+    { label:'学生時代の仲間と集まる', effect:{ bond:6, joy:4, money:-10 },
+      result:'同じように頑張る仲間の話に、元気をもらった。', log:'学生時代の仲間と集まる' },
+    { label:'新しい趣味を始める', effect:{ joy:8, money:-20 },
+      result:'仕事以外の楽しみができた。', log:'新しい趣味を始める' },
+    { label:'家でしっかり休む', effect:{ health:6, joy:1 },
+      result:'休むことも仕事のうち。', log:'休日はしっかり休む' },
+  ] },
+
+// ===== 社会人デビュー（22〜24歳）=====
+{ id:'start_pharma', pool:'career_start', careers:['pharma'],
+  title:'新人研究員の壁',
+  text:'研究所に配属。先輩たちの実験レベルは高く、毎晩遅くまで残る同期もいる。',
+  options:[
+    { label:'毎晩遅くまで残って食らいつく', effect:{ skill:12, health:-10, joy:3 },
+      result:'技術は一気に伸びた。ただ、疲れが抜けにくくなってきた。', log:'研究所で猛勉強の日々' },
+    { label:'定時で帰り、週末に論文を読む', effect:{ skill:6, joy:5, health:3 },
+      result:'自分のペースで着実に力をつけた。', log:'自分のペースで研究を学ぶ' },
+    { label:'忙しい先輩に教えてもらう', roll:{ stat:'bond', base:0.55,
+      success:{ effect:{ skill:10, bond:8 }, result:'先輩は快く教えてくれた。頼れる人ができた。', log:'先輩に弟子入り' },
+      fail:{ effect:{ skill:3, bond:-3 }, result:'タイミングが悪く、そっけなくされた…。', log:'先輩に頼むも空振り' } } },
+  ] },
+{ id:'start_food', pool:'career_start', careers:['food'],
+  title:'工場の品質管理',
+  text:'食品工場の品質管理部門に配属。早朝からの検査と、製造ラインとの調整の毎日。',
+  options:[
+    { label:'現場の人と積極的に話す', effect:{ bond:10, skill:5 },
+      result:'ラインの人たちと顔なじみに。困ったとき助けてもらえる関係ができた。', log:'工場の現場に溶け込む' },
+    { label:'検査技術をとことん磨く', effect:{ skill:10, joy:3 },
+      result:'分析の腕が上がり、頼られる存在に。', log:'検査技術を磨く' },
+    { label:'食品衛生の資格に挑戦する', roll:{ stat:'skill', base:0.55,
+      success:{ effect:{ skill:12, money:20, joy:5 }, result:'合格！資格手当もついた。', log:'食品衛生の資格に合格' },
+      fail:{ effect:{ skill:4, joy:-3 }, result:'今回は不合格。勉強したことは無駄にならない。', log:'資格試験に挑戦（不合格）' } },
+      tip:'食品の安全は、食品衛生法などの法律と、現場の品質管理の両方で守られています。' },
+  ] },
+{ id:'start_cosme', pool:'career_start', careers:['cosme'],
+  title:'新商品の企画会議',
+  text:'若手にも企画を出すチャンスがある会議。通れば、責任も大きくなる。',
+  options:[
+    { label:'思い切った企画を出す', roll:{ stat:'joy', base:0.45,
+      success:{ effect:{ joy:15, skill:8, money:30 }, result:'企画が通った！新人で商品化は異例だ。', log:'新人で企画が商品化' },
+      fail:{ effect:{ joy:-3, skill:5 }, result:'不採用。でも上司はあなたの名前を覚えた。', log:'企画を出すも不採用' } } },
+    { label:'先輩の企画を全力でサポート', effect:{ bond:10, skill:5 },
+      result:'チームの信頼を得た。仕事の進め方も学べた。', log:'先輩の企画を支える' },
+    { label:'研究データで説得力を高める', effect:{ skill:10 },
+      result:'データに強い若手として評価された。', log:'データで勝負する' },
+  ] },
+{ id:'start_cro', pool:'career_start', careers:['cro'],
+  title:'治験の現場',
+  text:'臨床開発モニター（CRA）として病院を回る日々。出張も多い。',
+  options:[
+    { label:'出張をこなして経験を積む', effect:{ skill:10, health:-5, money:30 },
+      result:'多くの病院を回り、現場の感覚が身についた。', log:'全国の病院を回る' },
+    { label:'専門資格の勉強を始める', effect:{ skill:10, joy:-3 },
+      result:'忙しいなかでも勉強を続け、知識の土台ができた。', log:'資格の勉強を始める' },
+    { label:'同期とのつながりを大切にする', effect:{ bond:10, joy:5 },
+      result:'悩みを話せる仲間ができた。', log:'同期と支え合う' },
+  ],
+  tip:'治験は、新しい薬の有効性と安全性を確かめるための臨床試験。参加者の同意と正確な記録が欠かせません。' },
+{ id:'start_civil', pool:'career_start', careers:['civil'],
+  title:'最初の配属',
+  text:'保健所の食品衛生監視員に。飲食店への立ち入り検査では、厳しいことも伝えなければならない。',
+  options:[
+    { label:'法律と基準を徹底的に覚える', effect:{ skill:10 },
+      result:'どんな質問にも根拠を持って答えられるようになった。', log:'食品衛生の法令を叩き込む' },
+    { label:'お店の人の話をよく聞く', effect:{ bond:10, joy:5 },
+      result:'「あなたの説明はわかりやすい」と言われるようになった。', log:'お店に寄り添う監視員に' },
+    { label:'研究機関への異動希望を出す', roll:{ stat:'skill', base:0.4,
+      success:{ effect:{ skill:12, joy:8 }, result:'希望が通り、県の試験研究機関へ異動！', log:'試験研究機関へ異動' },
+      fail:{ effect:{ joy:-3, skill:3 }, result:'今回は見送り。現場経験を積もう。', log:'異動希望は見送り' } } },
+  ] },
+{ id:'start_other', pool:'career_start', careers:['other'],
+  title:'異業種での再スタート',
+  text:'IT企業の営業職に。バイオの知識は使わないが、学ぶことは山ほどある。',
+  options:[
+    { label:'ゼロから営業スキルを磨く', effect:{ skill:8, money:50, health:-5 },
+      result:'成績が上がり、インセンティブも増えた。', log:'営業として一から修行' },
+    { label:'バイオ×ITの仕事を狙って勉強', roll:{ stat:'skill', base:0.5,
+      success:{ effect:{ skill:12, joy:10 }, result:'ヘルスケアIT部門に異動！専門が活きる場所を見つけた。', log:'ヘルスケアIT部門へ' },
+      fail:{ effect:{ skill:4 }, result:'まだチャンスは来ない。でも勉強は続けよう。', log:'バイオ×ITを目指して勉強' } } },
+    { label:'仕事はほどほど、プライベート重視', effect:{ joy:8, bond:8, skill:2 },
+      result:'趣味や友人との時間が充実した。', log:'プライベートを大切に' },
+  ] },
+{ id:'start_grad', pool:'career_start', careers:['grad'],
+  title:'修士の研究生活、そして進路',
+  text:'修士の2年間はあっという間。研究は面白い。修了が近づき、次の道を決めるときが来た。',
+  options:[
+    { label:'博士課程に進む', career:'doctor', effect:{ skill:10, money:-50 },
+      result:'さらに研究の道へ。収入はまだ先だ。', log:'博士課程に進学' },
+    { label:'製薬・バイオ企業の研究職に就職', career:'pharma', effect:{ skill:5, money:30 },
+      result:'修士卒の研究職として採用された！', log:'修士修了、研究職に就職' },
+    { label:'CRO（治験）企業に就職', career:'cro', effect:{ skill:5, joy:3 },
+      result:'研究の経験を活かして、医薬品開発の現場へ。', log:'修士修了、CROに就職' },
+  ],
+  tip:'4年制専門学校で「高度専門士」の称号を得ると、大学院の入学資格があります。' },
+
+// ===== 20代後半：仕事 =====
+{ id:'mid_pharma', pool:'career_mid', careers:['pharma'],
+  title:'海外の研究所への派遣',
+  text:'会社の制度で、海外の研究所に2年間派遣される枠がある。応募者は多い。',
+  options:[
+    { label:'応募する', roll:{ stat:'skill', base:0.5,
+      success:{ effect:{ skill:15, joy:10, bond:-5, money:50 }, result:'選ばれた！英語と最先端の技術にもまれた2年間。', log:'海外研究所に派遣' },
+      fail:{ effect:{ joy:-5, skill:3 }, result:'今回は落選。悔しさをバネにしよう。', log:'海外派遣に応募（落選）' } } },
+    { label:'国内で今のテーマを続ける', effect:{ skill:6, bond:5, joy:3 },
+      result:'テーマを深め、チームの中心メンバーに。', log:'国内でテーマを深める' },
+    { label:'学会や社外の勉強会で人脈を広げる', effect:{ bond:8, skill:4, money:-20 },
+      result:'他社の研究者ともつながり、視野が広がった。', log:'社外の研究者と人脈づくり' },
+  ] },
+{ id:'mid_food', pool:'career_mid', careers:['food'],
+  title:'新しい製造ラインの立ち上げ',
+  text:'新商品の製造ラインを立ち上げるプロジェクトのメンバーを募集している。',
+  options:[
+    { label:'手を挙げる', effect:{ skill:10, health:-8, joy:8, money:30 },
+      result:'夜遅くまで調整が続いたが、ラインは無事に稼働した。', log:'新ライン立ち上げに参加' },
+    { label:'今の仕事を安定してこなす', effect:{ health:5, bond:5 },
+      result:'落ち着いた毎日。生活のリズムも整った。', log:'安定した毎日を選ぶ' },
+    { label:'品質保証の専門資格に挑戦する', roll:{ stat:'skill', base:0.5,
+      success:{ effect:{ skill:10, money:20, joy:4 }, result:'合格！品質保証のプロとして頼られる存在に。', log:'品質保証の資格を取得' },
+      fail:{ effect:{ skill:3, joy:-3 }, result:'今回は不合格。来年また挑戦しよう。', log:'品質保証の資格に挑戦' } } },
+  ] },
+{ id:'mid_cosme', pool:'career_mid', careers:['cosme'],
+  title:'マーケティング部への異動打診',
+  text:'研究部門から、マーケティング部への異動を打診された。商品を世に出す仕事だ。',
+  options:[
+    { label:'受ける', effect:{ skill:3, joy:5, money:40, bond:5 },
+      result:'消費者の声に触れる新しい仕事。視野が広がった。', log:'マーケティング部へ異動' },
+    { label:'研究にこだわる', effect:{ skill:8, joy:3 },
+      result:'研究者としての道を選んだ。', log:'研究部門に残る' },
+    { label:'海外市場向けの開発チームに志願する', roll:{ stat:'skill', base:0.45,
+      success:{ effect:{ skill:10, joy:10, money:40, bond:-3 }, result:'アジア向け商品の開発を任された！', log:'海外市場向けの開発へ' },
+      fail:{ effect:{ joy:-4, skill:3 }, result:'今回は選ばれなかった。語学を磨こう。', log:'海外開発チームに志願（不採用）' } } },
+  ] },
+{ id:'mid_cro', pool:'career_mid', careers:['cro'],
+  title:'年収アップの転職話',
+  text:'経験3年。転職エージェントから「今より年収100万円アップも狙える」と連絡が来た。',
+  options:[
+    { label:'転職する', jobChange:true, effect:{ money:80, joy:3, bond:-5 },
+      result:'新しい会社で、より大きな試験を担当することに。', log:'CRO業界で転職' },
+    { label:'今の会社に残る', effect:{ bond:6, joy:2 },
+      result:'信頼できる仲間と働き続けることを選んだ。', log:'今の職場に残る' },
+    { label:'社内でデータマネジメント職に移る', effect:{ skill:8, joy:3, health:4 },
+      result:'出張が減り、データを扱う新しい専門が身についた。', log:'データマネジメント職へ' },
+  ],
+  tip:'転職すると給与が上がることもありますが、退職金の勤続年数はリセットされることが多いです。' },
+{ id:'mid_civil', pool:'career_mid', careers:['civil'],
+  title:'異動の季節',
+  text:'県の試験研究機関へ異動に。これまでとまったく違う分野を一から学ぶことになる。',
+  options:[
+    { label:'新しい分野を楽しむ', effect:{ skill:8, joy:5 },
+      result:'異動のたびに引き出しが増えていく。', log:'試験研究機関で新分野に挑む' },
+    { label:'前の部署の経験を活かす提案をする', roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ skill:6, bond:8, joy:6 }, result:'提案が採用され、部署間の連携が生まれた。', log:'部署をつなぐ提案が採用' },
+      fail:{ effect:{ bond:-3, skill:3 }, result:'「まずは慣れてから」と言われてしまった。', log:'提案は時期尚早だった' } } },
+    { label:'派遣研修で大学院に通う', roll:{ stat:'skill', base:0.4,
+      success:{ effect:{ skill:14, joy:6 }, result:'選考に通り、働きながら大学院で学ぶことに。', log:'派遣研修で大学院へ' },
+      fail:{ effect:{ skill:3, joy:-2 }, result:'選考は通らなかった。次の機会を待とう。', log:'派遣研修に応募（不採用）' } } },
+  ] },
+{ id:'mid_other', pool:'career_mid', careers:['other'],
+  title:'地方支店のリーダーに抜擢',
+  text:'営業成績が評価され、地方支店のリーダーに。ただし引っ越しが必要だ。',
+  options:[
+    { label:'引き受ける', inc:{ rank:1 }, effect:{ money:80, bond:-5, skill:5 },
+      result:'若くしてリーダーに。知らない土地で一からの人間関係づくり。', log:'地方支店のリーダーに' },
+    { label:'断って今の場所にいる', effect:{ bond:5, joy:-3 },
+      result:'今の暮らしと人間関係を守った。', log:'抜擢を断る' },
+    { label:'ヘルスケア業界に転職する', roll:{ stat:'skill', base:0.45,
+      success:{ career:'cro', effect:{ joy:10, money:-30 }, result:'バイオの知識を活かせる世界に戻ってきた。', log:'ヘルスケア業界へ転職' },
+      fail:{ effect:{ joy:-5 }, result:'経験不足を指摘された。もう少し準備が必要だ。', log:'ヘルスケア業界への転職に失敗' } } },
+  ] },
+{ id:'mid_doctor', pool:'career_mid', careers:['doctor'],
+  title:'博士号取得、その先へ',
+  text:'苦労の末に博士号を取得！ここからどの道に進む？',
+  options:[
+    { label:'大学でポスドク研究員になる', career:'academia', effect:{ skill:10, joy:10 },
+      result:'任期付きだが、研究を続けられる。', log:'博士号取得、ポスドクに' },
+    { label:'企業の研究職に就職', career:'pharma', effect:{ skill:8, money:50 },
+      result:'博士の専門性を活かして企業へ。', log:'博士号取得、企業研究職へ' },
+    { label:'データサイエンティストに転身', career:'other', effect:{ skill:5, money:80, joy:3 },
+      result:'博士で鍛えた分析力は、別の業界でも評価された。', log:'博士号取得、データ分析の道へ' },
+  ] },
+
+// ===== 20代後半：プライベート =====
+{ id:'lp_partner', pool:'life_partner', when:s=>!s.flags.married,
+  title:'将来の話',
+  text:'付き合って3年のパートナーと、そろそろ将来の話が出てきた。',
+  options:[
+    { label:'結婚する', set:{ married:true }, effect:{ bond:12, joy:10, money:-150 },
+      result:'新しい家族のはじまり。', log:'結婚' },
+    { label:'仕事が落ち着くまで待ってもらう', roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ skill:5, bond:2 }, result:'パートナーは理解してくれた。', log:'結婚は少し先に' },
+      fail:{ effect:{ bond:-10, joy:-8, skill:3 }, result:'すれ違いが重なり、別々の道を歩むことに…。', log:'パートナーと別れる' } } },
+    { label:'結婚して、パートナーの転勤先へ一緒に行く', set:{ married:true }, jobChange:true, effect:{ bond:12, joy:5, skill:-4, money:-120 },
+      result:'仕事は一からやり直しだが、二人で新しい街での生活をはじめた。', log:'結婚し、パートナーの転勤先へ' },
+  ] },
+{ id:'lp_rush', pool:'life_partner', when:s=>!s.flags.married,
+  title:'友人の結婚ラッシュ',
+  text:'ご祝儀の出費がかさむ年。自分の将来についても考えはじめる。',
+  options:[
+    { label:'出会いを探してみる', roll:{ stat:'bond', base:0.5,
+      success:{ set:{ married:true }, effect:{ bond:10, joy:8, money:-150 }, result:'気の合う人と出会い、結婚！', log:'出会いがあり結婚' },
+      fail:{ effect:{ joy:-3, money:-30 }, result:'なかなかご縁がない。焦らずいこう。', log:'出会いを探す' } } },
+    { label:'友人たちとの時間を楽しむ', effect:{ bond:8, joy:5, money:-30 },
+      result:'一生ものの友人たちとの時間。', log:'友人との時間を大切に' },
+    { label:'仕事と趣味に打ち込む', effect:{ skill:6, joy:5 },
+      result:'自分の時間を存分に使った。', log:'仕事と趣味に打ち込む' },
+  ] },
+
+// ===== 30代前半：倫理 =====
+{ id:'eth_lab', pool:'ethics', careers:['pharma','academia'],
+  title:'きれいすぎるデータ',
+  text:'締切の前日。上司が「この外れ値は消しておいて」と言う。消せば結果はきれいにまとまるが…。',
+  options:[
+    { label:'言われた通りに消す', ethics:'comply', set:{ fraud:true }, effect:{ skill:3, money:50, joy:-5 },
+      result:'報告は無事に通った。でも、どこか落ち着かない。', log:'データを“調整”した' },
+    { label:'理由を示して、残すべきだと伝える', ethics:'speak', set:{ honest:true }, roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ bond:5, skill:8, joy:8 }, result:'上司も納得し、追加実験をすることに。', log:'データの扱いについて上司と議論' },
+      fail:{ effect:{ bond:-8, joy:3 }, result:'上司との関係はぎくしゃくした。でも自分に嘘はつかなかった。', log:'上司に異を唱える' } } },
+    { label:'研究倫理の相談窓口に相談する', ethics:'formal', set:{ honest:true }, effect:{ skill:5, bond:-3, joy:5 },
+      result:'手続きは大変だったが、データは正しく扱われた。', log:'研究倫理窓口に相談' },
+  ],
+  tip:'研究不正（捏造・改ざん・盗用）は、研究者本人だけでなく、研究機関と科学そのものへの信頼を損ないます。' },
+{ id:'eth_food', pool:'ethics', careers:['food'],
+  title:'表示の“グレーゾーン”',
+  text:'原料の産地が変わった。包装の刷り直しには時間と費用がかかる。上司は「しばらくこのままで」と言う。',
+  options:[
+    { label:'言われた通りにする', ethics:'comply', set:{ fraud:true }, effect:{ money:50, joy:-5 },
+      result:'コストは抑えられた。でも、お客さんの顔が浮かぶ。', log:'表示をそのままにした' },
+    { label:'表示を直すべきだと上司を説得する', ethics:'speak', set:{ honest:true }, roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ bond:6, joy:8, skill:4 }, result:'上司も考え直し、表示はすぐに修正された。', log:'表示の修正を説得' },
+      fail:{ effect:{ bond:-8, joy:3 }, result:'煙たがられた。でも、間違ったことはしていない。', log:'上司に異を唱える' } } },
+    { label:'品質保証部門に正式に報告する', ethics:'formal', set:{ honest:true }, effect:{ skill:5, bond:-3, joy:5 },
+      result:'会社として対応が決まり、表示は修正された。', log:'品質保証部門に報告' },
+  ],
+  tip:'食品の表示は食品表示法で定められています。産地の偽装は、会社の存続を揺るがす事件になることもあります。' },
+{ id:'eth_cosme', pool:'ethics', careers:['cosme'],
+  title:'広告にどこまで書く？',
+  text:'「シミが消える！と書けば売れる」と営業が迫る。試験データはそこまで示していない。',
+  options:[
+    { label:'売れるならと、その表現を認める', ethics:'comply', set:{ fraud:true }, effect:{ money:60, joy:-5 },
+      result:'商品はよく売れた。でも、データを知る自分は複雑だ。', log:'誇大な広告表現を認めた' },
+    { label:'データに基づく表現を提案する', ethics:'speak', set:{ honest:true }, roll:{ stat:'skill', base:0.5,
+      success:{ effect:{ skill:6, joy:8, bond:4 }, result:'誠実な表現でも魅力は伝わり、商品はロングセラーに。', log:'誠実な広告表現を提案' },
+      fail:{ effect:{ bond:-6, joy:2 }, result:'営業とは対立したまま。それでも譲らなかった。', log:'営業と対立' } } },
+    { label:'法務部門に相談する', ethics:'formal', set:{ honest:true }, effect:{ skill:5, bond:-3, joy:4 },
+      result:'法令に沿った表現に修正された。', log:'法務部門に相談' },
+  ],
+  tip:'化粧品の広告表現は薬機法のルールがあり、効能を誇大に表示することは禁止されています。' },
+{ id:'eth_cro', pool:'ethics', careers:['cro'],
+  title:'記録の書き換え',
+  text:'治験の記録に記入漏れが見つかった。先輩は「日付をさかのぼって書いておけばいい」と言う。',
+  options:[
+    { label:'先輩の言う通りにする', ethics:'comply', set:{ fraud:true }, effect:{ money:30, joy:-6 },
+      result:'その場はおさまった。でも、記録は事実と違う。', log:'記録をさかのぼって修正' },
+    { label:'正しい手順で修正しようと先輩に伝える', ethics:'speak', set:{ honest:true }, roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ bond:6, skill:6, joy:6 }, result:'先輩も思い直し、ルール通りに修正した。', log:'正しい修正手順を守る' },
+      fail:{ effect:{ bond:-8, joy:3 }, result:'先輩との関係は気まずくなった。', log:'先輩に異を唱える' } } },
+    { label:'品質管理の担当者に報告する', ethics:'formal', set:{ honest:true }, effect:{ skill:5, bond:-3, joy:4 },
+      result:'逸脱として記録され、再発防止策がとられた。', log:'品質管理担当に報告' },
+  ],
+  tip:'治験の記録は、薬の安全性を判断する根拠です。修正するときは、いつ・誰が・なぜ直したかを残すのがルールです。' },
+{ id:'eth_civil', pool:'ethics', careers:['civil'],
+  title:'知り合いの店',
+  text:'検査先が、お世話になった先輩のお店だった。基準違反を「今回だけ見逃して」と頼まれる。',
+  options:[
+    { label:'今回だけ見逃す', ethics:'comply', set:{ fraud:true }, effect:{ bond:5, joy:-6 },
+      result:'先輩は喜んだ。でも、もし食中毒が起きたら…。', log:'違反を見逃した' },
+    { label:'事情を話し、改善を一緒に考える', ethics:'speak', set:{ honest:true }, roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ bond:6, joy:8, skill:4 }, result:'先輩も納得し、店はすぐに改善した。', log:'先輩の店の改善を支援' },
+      fail:{ effect:{ bond:-10, joy:3 }, result:'先輩とは疎遠になってしまった。', log:'先輩との関係を失う' } } },
+    { label:'担当を外れ、別の職員に任せる', ethics:'formal', set:{ honest:true }, effect:{ skill:3, joy:3 },
+      result:'利害関係があるときは担当を外れる。公正さを守った。', log:'利害関係を申し出て担当を外れる' },
+  ],
+  tip:'公務員には公正さが求められます。利害関係がある案件では、担当を外れるのが原則です。' },
+{ id:'eth_other', pool:'ethics', careers:['other','startup','indep'],
+  title:'数字の盛り方',
+  text:'今期の報告。まだ決まっていない案件を「受注確定」として計上すれば、目標に届く。',
+  options:[
+    { label:'確定として計上する', ethics:'comply', set:{ fraud:true }, effect:{ money:60, joy:-5 },
+      result:'目標達成。でも、来期の自分に借金をした気分だ。', log:'数字を盛って報告' },
+    { label:'正直に報告し、挽回策を出す', ethics:'speak', set:{ honest:true }, roll:{ stat:'skill', base:0.5,
+      success:{ effect:{ skill:6, joy:6, bond:5 }, result:'挽回策が評価され、上司からの信頼が増した。', log:'正直に報告し挽回策を提案' },
+      fail:{ effect:{ money:-30, joy:2 }, result:'評価は下がった。でも数字に嘘はない。', log:'未達を正直に報告' } } },
+    { label:'チームで計上ルールを確認する', ethics:'formal', set:{ honest:true }, effect:{ bond:4, skill:3 },
+      result:'ルールがあいまいだったことがわかり、全社で見直された。', log:'計上ルールの見直しを提案' },
+  ] },
+
+// ===== 30代前半：家族 =====
+{ id:'fam_child', pool:'family', when:s=>s.flags.married,
+  title:'子どものこと',
+  text:'パートナーと、子どもを持つかどうかを話し合う。',
+  options:[
+    { label:'子どもを迎える', set:{ child:true }, inc:{ children:1 }, effect:{ bond:15, joy:10, health:-5, money:-50 },
+      result:'にぎやかで、寝不足な毎日がはじまった。', log:'子どもを迎える' },
+    { label:'二人の生活を大切にする', effect:{ joy:8, bond:5, money:50 },
+      result:'二人の時間と、それぞれの仕事を大切にすることにした。', log:'二人の生活を選ぶ' },
+    { label:'まずは仕事を軌道に乗せてから考える', effect:{ skill:5, money:50, bond:-2 },
+      result:'二人で話し合い、もう少し先に考えることにした。', log:'子どものことは先に' },
+  ],
+  tip:'育児休業は男女どちらも取得できます。子育てには、教育費を含め長い期間お金がかかります。' },
+{ id:'fam_meet', pool:'family', when:s=>!s.flags.married,
+  title:'新しい出会い',
+  text:'趣味の集まりで、気の合う人と出会った。',
+  options:[
+    { label:'結婚を考える', set:{ married:true }, effect:{ bond:12, joy:8, money:-100 },
+      result:'30代での新しいスタート。', log:'結婚' },
+    { label:'今の関係をゆっくり育てる', effect:{ bond:6, joy:5 },
+      result:'焦らず、心地よい関係を大切にした。', log:'パートナーとゆっくり歩む' },
+    { label:'ひとりの人生を楽しむ', effect:{ joy:8, health:3, money:30 },
+      result:'自分のための時間とお金を、思いきり使った。', log:'ひとりの人生を楽しむ' },
+  ] },
+
+// ===== 30代後半：キャリアの分かれ道 =====
+{ id:'cp_manager', pool:'career_path', careers:['pharma','food','cosme','cro','other','civil'],
+  title:'管理職への打診',
+  text:'「来年度からチームを率いてほしい」と言われた。現場の仕事は減ることになる。',
+  options:[
+    { label:'引き受ける', inc:{ rank:1 }, effect:{ money:50, health:-6, skill:2, bond:3, joy:2 },
+      result:'給与は上がったが、会議と部下の相談で一日が終わる。', log:'管理職に就く' },
+    { label:'専門職として現場に残る', effect:{ skill:10, joy:6 },
+      result:'現場の第一線で腕を磨き続ける道を選んだ。', log:'専門職の道を選ぶ' },
+    { label:'専門の仕事も続けられるよう交渉する', roll:{ stat:'bond', base:0.45,
+      success:{ inc:{ rank:1 }, effect:{ skill:5, joy:5, money:40, health:-4 }, result:'プレイングマネージャーとして、両方を任された。', log:'専門を続けながら管理職に' },
+      fail:{ inc:{ rank:1 }, effect:{ health:-8, joy:-4, money:40 }, result:'交渉はうまくいかず、結局どちらも中途半端に…。', log:'管理職と専門の両立に苦しむ' } } },
+  ],
+  tip:'管理職になると給与は上がりやすい一方、専門の仕事から離れることもあります。専門職として昇進できる会社もあります。' },
+{ id:'cp_offer', pool:'career_path', careers:['pharma','food','cosme','cro','other'],
+  title:'他社からの好条件オファー',
+  text:'ライバル会社から「年収2割アップで来てほしい」と声がかかった。',
+  options:[
+    { label:'転職する', jobChange:true, effect:{ money:100, joy:5, bond:-6 },
+      result:'新しい環境で、ゼロから信頼を築くことに。', log:'好条件で転職' },
+    { label:'今の会社に残る', effect:{ bond:6, joy:2 },
+      result:'積み上げた信頼と人間関係を大切にした。', log:'オファーを断る' },
+    { label:'オファーを材料に、今の会社と交渉する', roll:{ stat:'skill', base:0.45,
+      success:{ effect:{ money:60, joy:3 }, result:'会社も評価を見直し、給与が上がった。', log:'交渉して昇給' },
+      fail:{ effect:{ bond:-6, joy:-3 }, result:'「そんなに言うなら…」と、上司との関係が冷えた。', log:'交渉が裏目に' } } },
+  ] },
+{ id:'cp_startup', pool:'career_path', when:s=>s.stats.skill>=45 && s.career!=='academia',
+  title:'起業しないか？',
+  text:'学生時代の友人から「一緒にバイオベンチャーをやらないか」と誘われた。',
+  options:[
+    { label:'会社を辞めて起業する', career:'startup', effect:{ money:-300, joy:15, health:-5 },
+      result:'安定を手放し、自分たちの技術で勝負する。', log:'バイオベンチャーを起業' },
+    { label:'副業として手伝う', set:{ side:true }, effect:{ money:30, health:-5, bond:5, skill:3 },
+      result:'本業を続けながら、週末は友人の会社へ。', log:'友人のベンチャーを副業で手伝う' },
+    { label:'断る', effect:{ bond:-2, health:2 },
+      result:'今の生活を守ることにした。', log:'起業の誘いを断る' },
+  ] },
+{ id:'cp_academia', pool:'career_path', careers:['academia'], weight:3,
+  title:'任期の壁',
+  text:'今の任期はあと1年。次のポストを見つけなければならない。',
+  options:[
+    { label:'大学教員の公募に挑戦する', roll:{ stat:'skill', base:0.5,
+      success:{ inc:{ rank:1 }, effect:{ joy:12, money:50, skill:5 }, result:'採用決定！任期のない准教授のポストを得た。', log:'大学の准教授に' },
+      fail:{ effect:{ joy:-10, money:-50 }, result:'不採用…。次の任期付きポストを探すことに。', log:'公募に落ち、任期付きポストを渡り歩く' } } },
+    { label:'企業の研究職に転身する', career:'pharma', effect:{ money:100, skill:3, joy:-3 },
+      result:'安定した環境で研究を続けることにした。', log:'アカデミアから企業研究職へ' },
+    { label:'海外の研究機関に応募する', roll:{ stat:'skill', base:0.4,
+      success:{ inc:{ rank:1 }, effect:{ skill:10, joy:10, bond:-6, money:80 }, result:'海外の研究所で、研究室を持つことになった！', log:'海外の研究機関でポストを得る' },
+      fail:{ effect:{ joy:-8 }, result:'不採用。でも、海外の研究者とつながりができた。', log:'海外の研究機関に応募' } } },
+  ],
+  tip:'若手研究者には任期付きのポストが多く、安定したポストを得るまでの競争は激しいのが現状です。' },
+
+// ===== 40代前半 =====
+{ id:'ml_house', pool:'midlife', when:s=>!s.flags.house && s.career!=='retired',
+  title:'家を買う？',
+  text:'住宅展示場で、理想の家を見つけた。35年ローンの話が具体的に。',
+  options:[
+    { label:'思い切って買う', set:{ house:true }, effect:{ money:-800, joy:8, bond:5 },
+      result:'自分の家を持った。ローン返済はこれからだ。', log:'マイホームを購入' },
+    { label:'賃貸のまま身軽に暮らす', effect:{ joy:3 },
+      result:'住む場所を変えられる自由を残した。', log:'賃貸暮らしを続ける' },
+    { label:'実家の近くに中古住宅を買う', set:{ house:true }, effect:{ money:-400, bond:8, joy:4 },
+      result:'親の近くで暮らせる安心感。', log:'実家の近くに中古住宅を購入' },
+    { label:'地方に移住してリモートワーク', effect:{ money:100, joy:8, health:5, skill:-3 },
+      result:'家賃は下がり、自然の中で暮らす毎日に。', log:'地方に移住' },
+  ],
+  tip:'住宅ローンは長期の借金です。金利や将来の収入、転勤の可能性も考えて判断しましょう。' },
+{ id:'ml_relearn', pool:'midlife', when:s=>s.career!=='retired',
+  title:'学び直し',
+  text:'40代。新しい知識を身につけないと、と感じることが増えた。',
+  options:[
+    { label:'社会人大学院に通う', effect:{ money:-150, skill:15, health:-5, joy:5 },
+      result:'仕事と両立しながら学位を取った。', log:'社会人大学院で学び直し' },
+    { label:'オンライン講座で資格の勉強', effect:{ skill:6, money:-20 },
+      result:'すき間時間を使って、新しい資格を取った。', log:'オンラインで資格取得' },
+    { label:'今は仕事と家庭で手一杯', effect:{ bond:5 },
+      result:'今は目の前のことを大切にする時期だ。', log:'学び直しは見送り' },
+  ] },
+{ id:'ml_side', pool:'midlife', when:s=>!s.flags.side && !['startup','indep','retired'].includes(s.career),
+  title:'副業の誘い',
+  text:'専門知識を活かして、記事の監修やオンライン講師をしないかと誘われた。',
+  options:[
+    { label:'副業を始める', set:{ side:true }, effect:{ money:50, skill:5, health:-8 },
+      result:'収入の柱が一本増えた。休日は減った。', log:'専門を活かした副業を開始' },
+    { label:'本業に集中する', effect:{ health:3, bond:3 },
+      result:'仕事以外の時間を守った。', log:'副業はしない' },
+    { label:'週末に地域の科学教室を手伝う（無償）', effect:{ bond:8, joy:8, health:-3 },
+      result:'子どもたちの「なんで？」に答える時間が楽しい。', log:'子ども科学教室のボランティア' },
+  ] },
+{ id:'ml_ai', pool:'midlife', when:s=>s.career!=='retired',
+  title:'AIが仕事を変える',
+  text:'職場にAIが導入され、自分の業務の半分が自動化されることになった。',
+  options:[
+    { label:'AIを使いこなす側にまわる', roll:{ stat:'skill', base:0.55,
+      success:{ effect:{ skill:12, joy:5, money:80 }, result:'AI活用の推進役になり、仕事の幅が広がった。', log:'AI活用の推進役に' },
+      fail:{ effect:{ skill:4, joy:-5 }, result:'なかなか追いつけない…。でも学び続けよう。', log:'AIの活用に苦戦' } } },
+    { label:'人にしかできない仕事を磨く', effect:{ bond:6, skill:4, joy:3 },
+      result:'人との調整や判断など、自分にしかできない役割を見つけた。', log:'人にしかできない仕事を磨く' },
+    { label:'AIの導入に反対する', effect:{ bond:3, joy:-5, skill:-3 },
+      result:'導入は止まらなかった。変化から目をそらすと、取り残されることもある。', log:'AI導入に反対する' },
+  ] },
+{ id:'ml_startup', pool:'midlife', careers:['startup'], weight:5,
+  title:'事業の岐路',
+  text:'ベンチャーキャピタルから大型出資の話。成長か、堅実か。',
+  options:[
+    { label:'出資を受けて事業を拡大する', roll:{ stat:'skill', base:0.45,
+      success:{ effect:{ money:800, joy:10, health:-10 }, result:'事業は急成長！社員は50人を超えた。', log:'出資を受けて事業拡大に成功' },
+      fail:{ effect:{ money:-500, joy:-15, health:-10 }, result:'拡大は空回り。会社は苦しい状況に…。', log:'事業拡大に失敗' } } },
+    { label:'小さくても堅実に続ける', effect:{ money:100, joy:3 },
+      result:'自分たちの身の丈で、着実に成長した。', log:'堅実な経営を選ぶ' },
+    { label:'会社を製薬企業に売却する', career:'pharma', effect:{ money:1000, joy:-3 },
+      result:'会社は大手に買収され、あなたはその研究所に移った。', log:'会社を売却し大手の研究所へ' },
+  ] },
+
+// ===== 40代後半 =====
+{ id:'care_parent', pool:'care',
+  title:'親の介護',
+  text:'実家の親が倒れ、介護が必要になった。',
+  options:[
+    { label:'介護休業を使って向き合う', effect:{ money:-100, bond:12, health:-5 },
+      result:'大変だったが、親とゆっくり話す時間にもなった。', log:'介護休業で親と向き合う' },
+    { label:'介護サービスを最大限に使う', effect:{ money:-250, bond:4, health:-2 },
+      result:'プロの力を借りて、仕事との両立を図った。', log:'介護サービスを活用' },
+    { label:'きょうだいと分担を相談する', roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ bond:8, money:-80 }, result:'みんなで分担でき、負担を分け合えた。', log:'きょうだいで介護を分担' },
+      fail:{ effect:{ bond:-8, health:-8, money:-120 }, result:'話し合いはこじれ、負担が自分に集中した…。', log:'介護の分担でもめる' } } },
+  ],
+  tip:'介護休業は、対象家族1人につき通算93日まで、3回まで分けて取得できます（育児・介護休業法）。' },
+{ id:'care_child', pool:'care', when:s=>s.flags.children>0, weight:1.5,
+  title:'子どもの進路',
+  text:'子どもが進学先に悩んでいる。県外の私立大学に行きたいらしい。',
+  options:[
+    { label:'希望の進路を全力で応援する', effect:{ money:-500, bond:10, joy:5 },
+      result:'仕送りは大変だが、子どもは目を輝かせている。', log:'子どもの進学を全力応援' },
+    { label:'奨学金も含めて本人と話し合う', effect:{ money:-200, bond:8, joy:3 },
+      result:'お金のことも隠さず話し、一緒に決めた。', log:'子どもと進路のお金を話し合う' },
+    { label:'給付型奨学金や教育ローンを一緒に調べる', effect:{ money:-150, bond:6, joy:3 },
+      result:'使える制度を組み合わせて、負担を減らせた。', log:'子どもと奨学金制度を調べる' },
+  ],
+  tip:'奨学金には返さなくてよい「給付型」と、返す必要がある「貸与型」があります。' },
+{ id:'hl_check', pool:'health',
+  title:'健康診断で再検査',
+  text:'健康診断で「要精密検査」の判定。忙しい時期だ。',
+  options:[
+    { label:'すぐに精密検査を受ける', effect:{ health:8, money:-10 },
+      result:'早めに見つかり、軽い治療で済んだ。', log:'精密検査ですぐ対応' },
+    { label:'忙しいので後回し', roll:{ stat:'health', base:0.5,
+      success:{ effect:{ health:-2 }, result:'今回は大事に至らなかった。運がよかっただけかもしれない。', log:'再検査を後回し' },
+      fail:{ effect:{ health:-20, money:-100, joy:-5 }, result:'症状が悪化し、入院することに…。', log:'再検査を放置し入院' } } },
+    { label:'セカンドオピニオンも受けて慎重に', effect:{ health:10, money:-30 },
+      result:'二人の医師の意見を聞き、納得して治療を選べた。', log:'セカンドオピニオンを受ける' },
+  ],
+  tip:'健康診断の「要精密検査」は放置しないこと。早く見つけるほど治療の負担は小さくなります。' },
+{ id:'hl_burnout', pool:'health', when:s=>s.stats.health<55 || s.stats.joy<45, weight:3,
+  title:'燃え尽きそう',
+  text:'朝、起きるのがつらい。仕事への気力がわいてこない。',
+  options:[
+    { label:'休職してしっかり休む', effect:{ health:15, money:-100, skill:-3, joy:5 },
+      result:'休んだことで、少しずつ元気を取り戻した。', log:'休職して心身を立て直す' },
+    { label:'働き方を見直す（時短・業務調整）', effect:{ health:8, money:-60, bond:5 },
+      result:'上司に相談し、無理のない働き方に変えた。', log:'働き方を見直す' },
+    { label:'このまま走り続ける', effect:{ health:-12, skill:3, money:50 },
+      result:'なんとか乗り切ったが、体は悲鳴をあげている。', log:'無理をして走り続ける' },
+  ],
+  tip:'心身の不調は誰にでも起こります。早めに休む、相談することは弱さではありません。' },
+{ id:'hl_sport', pool:'health',
+  title:'運動不足を指摘された',
+  text:'医師から「このままだと生活習慣病のリスクが高い」と言われた。',
+  options:[
+    { label:'ジムに通う', effect:{ health:10, money:-30 },
+      result:'体が軽くなり、仕事の集中力も上がった。', log:'ジム通いを始める' },
+    { label:'地域のスポーツサークルに入る', effect:{ health:8, bond:6 },
+      result:'運動仲間ができた。', log:'スポーツサークルに参加' },
+    { label:'忙しくて無理', effect:{ health:-5 },
+      result:'健康は、失ってから気づくものかもしれない。', log:'運動は後回し' },
+  ] },
+
+// ===== 50代前半 =====
+{ id:'lc_post', pool:'late_career', careers:['pharma','food','cosme','cro','other','civil'], when:s=>s.flags.rank>=1, weight:2,
+  title:'役職定年',
+  text:'55歳で役職を降りる制度がある。給与も下がる。これからの役割をどうする？',
+  options:[
+    { label:'若手の育成役にまわる', inc:{ rank:-1 }, effect:{ bond:10, joy:5 },
+      result:'後輩の成長が、自分の喜びになった。', log:'若手育成役にまわる' },
+    { label:'専門家として現場に戻る', inc:{ rank:-1 }, effect:{ skill:5, joy:6 },
+      result:'久しぶりの現場。手を動かすのはやはり楽しい。', log:'現場の専門家に戻る' },
+    { label:'役職を求めて転職する', roll:{ stat:'skill', base:0.4,
+      success:{ jobChange:true, effect:{ money:150, joy:5 }, result:'経験を買われ、他社の部長に。', log:'他社の部長として転職' },
+      fail:{ inc:{ rank:-1 }, effect:{ money:-50, joy:-8 }, result:'50代の転職は厳しかった。今の会社に残ることに。', log:'転職活動に苦戦' } } },
+  ] },
+{ id:'lc_early', pool:'late_career', careers:['pharma','food','cosme','cro','other'],
+  title:'早期退職の募集',
+  text:'会社が早期退職者を募集している。退職金の上乗せがある。',
+  options:[
+    { label:'応募して独立する', career:'indep', effect:{ money:500, joy:8, bond:-3 },
+      result:'会社の看板なしで、自分の名前で勝負する。', log:'早期退職して独立' },
+    { label:'応募して早めにリタイア', career:'retired', effect:{ money:500, health:8, joy:3 },
+      result:'早めに仕事を離れ、自分の時間を手に入れた。', log:'早期退職してリタイア' },
+    { label:'会社に残る', effect:{ bond:3, joy:-2 },
+      result:'定年まで、この会社で働くと決めた。', log:'会社に残る' },
+  ],
+  tip:'早期退職では退職金が上乗せされることがありますが、その後の収入をどう確保するかが重要です。' },
+{ id:'lc_junior', pool:'late_career', when:s=>s.career!=='retired',
+  title:'後輩からの相談',
+  text:'若手から「この仕事を続けていいのか迷っている」と相談を受けた。',
+  options:[
+    { label:'時間をかけて向き合う', effect:{ bond:10, joy:5, health:-3 },
+      result:'自分の経験を語るうちに、自分の歩みもふりかえれた。', log:'後輩の悩みに向き合う' },
+    { label:'要点だけアドバイスする', effect:{ skill:2, bond:3 },
+      result:'短い言葉でも、後輩には響いたようだ。', log:'後輩に助言' },
+    { label:'思い切って大きな仕事を任せてみる', roll:{ stat:'bond', base:0.55,
+      success:{ effect:{ bond:10, joy:8 }, result:'後輩は見事にやりとげた。人を育てる喜びを知った。', log:'後輩に大きな仕事を任せる' },
+      fail:{ effect:{ bond:-3, joy:-3, health:-3 }, result:'荷が重すぎたようだ。フォローに追われた。', log:'後輩に任せるも失敗' } } },
+  ] },
+{ id:'lc_startup', pool:'late_career', careers:['startup'], weight:5,
+  title:'会社の行方',
+  text:'会社を立ち上げて十数年。これからどうする？',
+  options:[
+    { label:'株式上場を目指す', roll:{ stat:'skill', base:0.35,
+      success:{ effect:{ money:2000, joy:15, health:-8 }, result:'上場を果たした！夢がかなった瞬間。', log:'会社が株式上場' },
+      fail:{ effect:{ money:-300, joy:-10, health:-10 }, result:'上場は見送り。資金面で苦しい時期が続く。', log:'上場を目指すも断念' } } },
+    { label:'若手に経営を任せる', career:'indep', effect:{ money:300, joy:5, bond:8 },
+      result:'会社は次の世代へ。あなたは顧問として関わる。', log:'経営を若手に引き継ぐ' },
+    { label:'会社を売却して、ゆっくり暮らす', career:'retired', effect:{ money:1500, joy:3, bond:5 },
+      result:'育てた会社を手放し、新しい人生へ。', log:'会社を売却してリタイア' },
+  ] },
+{ id:'lc_academia', pool:'late_career', careers:['academia'], weight:3,
+  title:'研究の集大成',
+  text:'研究者人生の後半。最後に何に力を注ぐ？',
+  options:[
+    { label:'大型研究費に挑戦する', roll:{ stat:'skill', base:0.45,
+      success:{ effect:{ skill:10, joy:12 }, result:'採択！長年の研究がついに大きく花開く。', log:'大型研究費に採択' },
+      fail:{ effect:{ joy:-5, skill:3 }, result:'不採択。でも研究の種はまだある。', log:'大型研究費に挑戦' } } },
+    { label:'学生の教育に力を注ぐ', effect:{ bond:12, joy:6 },
+      result:'教え子たちが各地で活躍しはじめた。', log:'教育に力を注ぐ' },
+    { label:'研究成果で大学発ベンチャーを立ち上げる', career:'startup', effect:{ money:-100, joy:12 },
+      result:'研究室の成果を、社会で使われる形に。', log:'大学発ベンチャーを起業' },
+  ] },
+
+// ===== 50代後半 =====
+{ id:'pr_money', pool:'pre_retire',
+  title:'老後のお金をどうする',
+  text:'老後の生活費が気になりはじめた。手元の資産をどうしよう。',
+  options:[
+    { label:'積立・分散投資をコツコツ続ける', effect:{ money:250 },
+      result:'時間を味方につけて、資産は着実に育った。', log:'積立・分散投資を続ける',
+      tip:'NISAなどの制度を使った長期・分散・積立の投資は、資産づくりの基本とされています（元本保証ではありません）。' },
+    { label:'預金でしっかり守る', effect:{ money:100 },
+      result:'増えはしないが、減る心配もない。', log:'預金で資産を守る' },
+    { label:'「確実に倍になる」投資話に乗る', roll:{ stat:null, base:0.15,
+      success:{ effect:{ money:500, joy:5 }, result:'運よくもうかった。でも二度目はないだろう。', log:'うまい投資話でもうける' },
+      fail:{ effect:{ money:-800, joy:-12, health:-5 }, result:'連絡が取れなくなった…。詐欺だった。', log:'投資詐欺の被害に' } },
+      tip:'「必ずもうかる」「元本保証で高利回り」という話は、詐欺を疑いましょう。' },
+  ] },
+{ id:'pr_local', pool:'pre_retire',
+  title:'地域とのつながり',
+  text:'町内会から、地域のイベントの手伝いを頼まれた。',
+  options:[
+    { label:'地域の活動に参加する', effect:{ bond:12, joy:8, health:3 },
+      result:'職場以外の居場所ができた。', log:'地域活動に参加' },
+    { label:'今は仕事に集中する', effect:{ skill:4, money:50, bond:-3 },
+      result:'仕事で最後のひと花を咲かせたい。', log:'仕事に集中する' },
+    { label:'オンラインで同じ趣味の仲間を見つける', effect:{ bond:6, joy:6 },
+      result:'全国に話の合う仲間ができた。', log:'オンラインの趣味仲間ができる' },
+  ] },
+{ id:'pr_hobby', pool:'pre_retire',
+  title:'新しい趣味',
+  text:'子どものころにやりたかったことを、ふと思い出した。',
+  options:[
+    { label:'楽器やアートを始める', effect:{ joy:10, money:-50 },
+      result:'下手でも楽しい。新しい自分に出会えた。', log:'楽器・アートを始める' },
+    { label:'山歩きを始める', effect:{ health:8, joy:5 },
+      result:'週末の山が、心と体のリセットに。', log:'山歩きを始める' },
+    { label:'勉強会や学会に通い続ける', effect:{ skill:6, bond:4 },
+      result:'学ぶことは、いくつになっても楽しい。', log:'学びを続ける' },
+  ] },
+
+// ===== 60代前半 =====
+{ id:'sl_job', pool:'second_life', careers:['pharma','food','cosme','cro','other','civil','academia'],
+  title:'60歳、定年。その後は？',
+  text:'いよいよ定年。65歳までの5年間をどう過ごす？',
+  options:[
+    { label:'再雇用で働き続ける', effect:{ money:250, skill:2, joy:-3 },
+      result:'給与は下がったが、慣れた職場で働き続けた。', log:'再雇用で働き続ける',
+      tip:'60歳以降も働ける「再雇用制度」は多くの会社にあります。給与は下がることが一般的です。' },
+    { label:'経験を活かして教える仕事へ', effect:{ joy:12, bond:8, money:100 },
+      result:'専門学校の非常勤講師に。若い人と話すのは刺激的だ。', log:'専門学校の講師に' },
+    { label:'引退して自分の時間を楽しむ', career:'retired', effect:{ joy:10, health:6, bond:8 },
+      result:'仕事を離れ、家族や趣味の時間を楽しんだ。', log:'60歳で引退' },
+    { label:'地元で小さなお店を開く', career:'indep', effect:{ money:-300, joy:12, bond:6 },
+      result:'夢だった小さなお店。常連さんとの会話が楽しみに。', log:'定年後に小さなお店を開く' },
+  ] },
+{ id:'sl_free', pool:'second_life', careers:['startup','indep'],
+  title:'これからの働き方',
+  text:'定年のない働き方。いつまで、どのくらい働く？',
+  options:[
+    { label:'生涯現役で続ける', effect:{ money:200, joy:5, health:-3 },
+      result:'仕事があることが、元気の源だ。', log:'生涯現役を貫く' },
+    { label:'少しずつペースを落とす', effect:{ joy:6, health:5, money:50 },
+      result:'ほどよく働き、ほどよく休む。', log:'ペースを落として働く' },
+    { label:'後進に仕事を引き継ぐ', effect:{ bond:10, joy:5 },
+      result:'積み上げたものを次の世代に託した。', log:'仕事を後進に託す' },
+  ] },
+{ id:'sl_retired', pool:'second_life', careers:['retired'],
+  title:'第二の人生',
+  text:'時間はたっぷりある。何をしよう？',
+  options:[
+    { label:'地域の子どもに科学を教える', effect:{ bond:10, joy:10 },
+      result:'「科学っておもしろい！」子どもたちの声がうれしい。', log:'子どもに科学を教えるボランティア' },
+    { label:'家族や友人と旅をする', effect:{ bond:8, joy:8, money:-100 },
+      result:'行きたかった場所を、大切な人とめぐった。', log:'大切な人と旅をする' },
+    { label:'健康づくりに励む', effect:{ health:10, joy:3 },
+      result:'毎朝の散歩とラジオ体操が日課に。', log:'健康づくりが日課に' },
+    { label:'シルバー人材センターで働く', effect:{ money:100, bond:6, health:3 },
+      result:'ほどよく働き、地域の役にも立てる。', log:'シルバー人材センターで働く' },
+  ] },
+
+// ===== ルーレット：チャンス（8〜10）=====
+{ id:'lg_bonus', pool:'luck_good', careers:COMPANY,
+  title:'業績好調でボーナス増！', text:'会社の業績が好調。ボーナスが大きく増えた。',
+  effect:{ money:80, joy:3 } },
+{ id:'lg_paper', pool:'luck_good', careers:LAB,
+  title:'論文が専門誌に掲載！', text:'苦労した研究が、専門誌に掲載された。',
+  effect:{ skill:8, joy:10 } },
+{ id:'lg_award', pool:'luck_good', careers:['pharma','food','cosme','cro','other','civil'],
+  title:'表彰された！', text:'日々の仕事ぶりが認められ、表彰を受けた。',
+  effect:{ joy:10, bond:5, money:30 } },
+{ id:'lg_patent', pool:'luck_good', careers:['pharma','food','cosme','academia','startup'], when:s=>s.stage>=1,
+  title:'特許を取得！', text:'あなたのアイデアが特許になった。',
+  effect:{ money:100, skill:5, joy:8 } },
+{ id:'lg_hit', pool:'luck_good', careers:['food','cosme'],
+  title:'ヒット商品が誕生！', text:'関わった商品がSNSで話題に。店頭から消えるほどの人気だ。',
+  effect:{ money:120, joy:12 } },
+{ id:'lg_friend', pool:'luck_good',
+  title:'旧友と再会', text:'学生時代の友人と偶然再会。昔話に花が咲いた。',
+  effect:{ bond:10, joy:5 } },
+{ id:'lg_habit', pool:'luck_good',
+  title:'朝の運動が習慣に', text:'なんとなく始めた朝の散歩が、すっかり習慣になった。',
+  effect:{ health:12, joy:3 } },
+{ id:'lg_mentor', pool:'luck_good', when:s=>s.stage<=4 && s.career!=='retired',
+  title:'尊敬できる人との出会い', text:'仕事を通じて、生き方の手本になる人に出会った。',
+  effect:{ skill:6, bond:8, joy:5 } },
+{ id:'lg_trip', pool:'luck_good', when:s=>s.flags.married,
+  title:'最高の家族旅行', text:'みんなの休みがそろい、ずっと行きたかった場所へ。',
+  effect:{ bond:12, joy:8, money:-30 } },
+{ id:'lg_solo', pool:'luck_good', when:s=>!s.flags.married,
+  title:'ひとり旅で視野が広がる', text:'思い立って海外へ。世界の広さを肌で感じた。',
+  effect:{ joy:10, skill:3, money:-30 } },
+{ id:'lg_deal', pool:'luck_good', careers:['startup','indep'],
+  title:'大口の取引先を獲得！', text:'大きな取引が決まった。',
+  effect:{ money:400, joy:10 } },
+{ id:'lg_lottery', pool:'luck_good',
+  title:'宝くじで小当たり', text:'なんとなく買った宝くじが当たった。',
+  effect:{ money:30, joy:3 } },
+{ id:'lg_kid', pool:'luck_good', when:s=>s.flags.children>0,
+  title:'子どもの成長に感動', text:'子どもが、初めて自分の力で大きなことをやりとげた。',
+  effect:{ bond:8, joy:10 } },
+{ id:'lg_scout', pool:'luck_good', careers:COMPANY, when:s=>s.stage>=2 && s.stage<=6,
+  title:'ヘッドハンティングの電話', text:'あなたの評判を聞いた会社から、引き抜きの誘いが来た。',
+  options:[
+    { label:'話を聞いて転職する', jobChange:true, effect:{ money:150, skill:3, bond:-5 },
+      result:'より良い条件で新しい会社へ。', log:'ヘッドハンティングで転職' },
+    { label:'今の会社に残る', effect:{ bond:5, joy:3 },
+      result:'評価されたことは、自信になった。', log:'引き抜きを断る' },
+  ] },
+
+// ===== ルーレット：ふつう（4〜7）=====
+{ id:'ln_move', pool:'luck_normal',
+  title:'引っ越し', text:'住まいを変えることに。新しい街での暮らしがはじまる。',
+  effect:{ money:-30, joy:3, bond:-2 } },
+{ id:'ln_license', pool:'luck_normal', when:s=>s.career!=='retired',
+  title:'研修の季節', text:'職場の研修に参加。眠いけれど、新しい発見もあった。',
+  effect:{ skill:3, money:-10 } },
+{ id:'ln_reunion', pool:'luck_normal',
+  title:'同窓会の案内', text:'専門学校の同窓会の案内が届いた。',
+  options:[
+    { label:'行く', effect:{ bond:6, joy:3, money:-10 }, result:'みんなそれぞれの道で頑張っていた。', log:'同窓会に参加' },
+    { label:'今回はパス', effect:{ health:2 }, result:'家でゆっくり過ごした。', log:'同窓会を欠席' },
+  ] },
+{ id:'ln_reorg', pool:'luck_normal', careers:['pharma','food','cosme','cro','other','civil'],
+  title:'組織の再編', text:'部署の再編で、上司とチームのメンバーが変わった。',
+  effect:{ skill:2, bond:-2 } },
+{ id:'ln_pet', pool:'luck_normal', when:s=>!s.flags.pet,
+  title:'ペットを迎える？', text:'保護猫の譲渡会で、目が合った一匹がいる。',
+  options:[
+    { label:'家族に迎える', set:{ pet:true }, effect:{ bond:6, joy:8, money:-50 }, result:'毎日の癒やしができた。', log:'保護猫を家族に迎える' },
+    { label:'今は見送る', effect:{}, result:'責任を持てるときに、また考えよう。', log:'ペットは見送り' },
+  ] },
+{ id:'ln_car', pool:'luck_normal',
+  title:'欲しかった車', text:'ずっと欲しかった車が、セールで少し安くなっている。',
+  options:[
+    { label:'買う', effect:{ money:-200, joy:8 }, result:'週末のドライブが楽しみになった。', log:'車を購入' },
+    { label:'買わない', effect:{ money:0 }, result:'欲しい気持ちはぐっとこらえた。', log:'車の購入を見送る' },
+  ] },
+{ id:'ln_cook', pool:'luck_normal',
+  title:'自炊を始める', text:'外食続きを反省して、料理を始めた。',
+  effect:{ health:5, money:30 } },
+{ id:'ln_check', pool:'luck_normal',
+  title:'健康診断はおおむね良好', text:'今年の健康診断は大きな問題なし。',
+  effect:{ health:2 } },
+{ id:'ln_transfer', pool:'luck_normal', careers:['civil'],
+  title:'数年ごとの異動', text:'また異動の内示。新しい部署で一からのスタート。',
+  effect:{ skill:3, bond:3, joy:-2 } },
+{ id:'ln_phone', pool:'luck_normal',
+  title:'スマホの画面が割れた', text:'うっかり落として、画面がバキバキに。',
+  effect:{ money:-5, joy:-2 } },
+
+// ===== ルーレット：ピンチ（1〜3）=====
+{ id:'lb_cold', pool:'luck_bad',
+  title:'かぜをこじらせた', text:'無理して出勤していたら、こじらせて1週間寝込んだ。',
+  effect:{ health:-8, joy:-2 } },
+{ id:'lb_epidemic', pool:'luck_bad',
+  title:'感染症の大流行', text:'新しい感染症が流行。生活も仕事も大きく変わった。',
+  effect:{ health:-6, money:-30, bond:-3 } },
+{ id:'lb_bonuscut', pool:'luck_bad', careers:COMPANY,
+  title:'ボーナスカット', text:'会社の業績が悪化し、ボーナスが大幅に減った。',
+  effect:{ money:-100, joy:-4 } },
+{ id:'lb_back', pool:'luck_bad', when:s=>s.stage>=3,
+  title:'ぎっくり腰', text:'荷物を持ち上げた瞬間、腰に激痛が。',
+  effect:{ health:-10, joy:-3 } },
+{ id:'lb_fail', pool:'luck_bad', careers:LAB,
+  title:'実験の失敗続き', text:'何か月も実験がうまくいかない。',
+  effect:{ joy:-8, skill:2, health:-3 } },
+{ id:'lb_scam', pool:'luck_bad',
+  title:'「スマホで月50万円」の副業話', text:'SNSで知り合った人から、楽にもうかる副業を紹介された。',
+  options:[
+    { label:'話に乗ってみる', effect:{ money:-200, joy:-5 }, result:'登録料を払ったら、連絡が途絶えた…。', log:'副業詐欺の被害に' },
+    { label:'怪しいので無視する', effect:{ joy:1 }, result:'その判断は正解だった。', log:'怪しい副業話を断る' },
+  ],
+  tip:'「誰でも簡単に高収入」という副業の勧誘は、詐欺や違法な仕事のことがあります。' },
+{ id:'lb_restructure', pool:'luck_bad', careers:COMPANY, when:s=>s.stage>=2,
+  title:'部署がなくなる', text:'会社の業績不振で、所属部署の廃止が決まった。',
+  options:[
+    { label:'社内の別部署に移る', effect:{ skill:-3, joy:-5, bond:3 }, result:'慣れない仕事だが、会社には残れた。', log:'部署廃止で社内異動' },
+    { label:'転職活動をする', roll:{ stat:'skill', base:0.5,
+      success:{ jobChange:true, effect:{ skill:3, joy:5 }, result:'専門性が評価され、すぐに新しい職場が決まった。', log:'部署廃止を機に転職' },
+      fail:{ effect:{ money:-200, joy:-10, health:-5 }, result:'転職活動は長引き、しばらく無収入の期間が続いた。', log:'転職活動が長引く' } } },
+    { label:'これを機に独立する', career:'indep', effect:{ money:-100, joy:8 },
+      result:'会社に頼らず、自分の力で稼ぐ道へ。', log:'部署廃止を機に独立' },
+  ] },
+{ id:'lb_conflict', pool:'luck_bad', when:s=>s.career!=='retired',
+  title:'職場の人間関係トラブル', text:'チーム内でもめごとが起き、職場の空気が重い。',
+  effect:{ bond:-8, joy:-6, health:-3 } },
+{ id:'lb_disaster', pool:'luck_bad',
+  title:'大雨で自宅が浸水', text:'記録的な大雨で、自宅が床上浸水の被害を受けた。',
+  effect:{ money:-200, health:-5, bond:5 }, result:'近所の人たちと助け合って乗り越えた。',
+  tip:'災害への備えとして、ハザードマップの確認や火災保険（水災補償）の見直しが役立ちます。' },
+{ id:'lb_sleep', pool:'luck_bad',
+  title:'眠れない日々', text:'仕事のことが頭から離れず、眠りが浅い日が続いている。',
+  effect:{ health:-8, joy:-4 } },
+{ id:'lb_cash', pool:'luck_bad', careers:['startup'],
+  title:'資金繰りの危機', text:'取引先の支払いが遅れ、会社の資金が底をつきそうだ。',
+  effect:{ money:-300, health:-8, joy:-5 } },
+
+// ===== 後日談（条件がそろうと、ステージの最初に起きる）=====
+{ id:'fu_fraud', pool:'followup', chance:0.3,
+  when:s=>s.flags.fraud && !s.flags.fraudFound && s.stage>s.flags.fraudAt,
+  title:'過去の“あの件”が明るみに', text:'数年前のあの判断が、内部調査で発覚した。',
+  set:{ fraudFound:true, rank:0 }, effect:{ money:-300, bond:-15, joy:-15, skill:-5 },
+  result:'処分を受け、周囲の信頼を大きく失った。一度失った信頼を取り戻すには、長い時間がかかる。',
+  log:'過去の不正が発覚し処分を受ける',
+  tip:'不正は「バレなければいい」ではありません。発覚したときの代償は、その場で得たものよりずっと大きくなります。' },
+{ id:'fu_honest', pool:'followup', chance:0.5,
+  when:s=>s.flags.honest && s.stage>s.flags.honestAt,
+  title:'信頼の積み重ね', text:'あのとき筋を通したあなたのことを、まわりはちゃんと見ていた。',
+  effect:{ bond:8, joy:6, skill:3 },
+  result:'「あの人なら信頼できる」。大事な仕事を任されるようになった。', log:'誠実さが評価され、信頼を得る' },
+{ id:'fu_child', pool:'followup', chance:1,
+  when:s=>s.flags.children>0 && s.stage>=s.flags.childAt+4,
+  title:'子どもの巣立ち', text:'子どもが社会人になり、家を出ていった。',
+  effect:{ bond:5, joy:8, money:30 },
+  result:'さみしさと誇らしさ。子育ての日々が終わった。', log:'子どもが巣立つ' },
+
+// ===== 追加イベント（バリエーション）=====
+{ id:'mid_study', pool:'career_mid', careers:['pharma','food','cosme','cro','other','civil'], weight:0.6,
+  title:'社会人の勉強会',
+  text:'同じ業界の若手が集まる勉強会に誘われた。開催は月1回、土曜日。',
+  options:[
+    { label:'毎月参加する', effect:{ skill:6, bond:6, money:-20 },
+      result:'社外にも相談できる仲間ができた。', log:'業界の勉強会に毎月参加' },
+    { label:'オンラインのときだけ参加', effect:{ skill:4, health:2 },
+      result:'無理のない範囲で学び続けた。', log:'勉強会にオンライン参加' },
+    { label:'断って休日を守る', effect:{ health:4, joy:3 },
+      result:'休日はしっかり休む。それも大事な選択だ。', log:'休日を守る' },
+  ] },
+{ id:'mid_overwork', pool:'career_mid', careers:['pharma','food','cosme','cro','other','civil'], weight:0.6,
+  title:'繁忙期の残業続き',
+  text:'ここ3か月、終電近くまで残業が続いている。',
+  options:[
+    { label:'残業代を貯金にまわす', effect:{ money:80, health:-8 },
+      result:'貯金は増えたが、体は疲れている。', log:'残業続きの繁忙期' },
+    { label:'上司に業務の見直しを提案する', roll:{ stat:'bond', base:0.5,
+      success:{ effect:{ health:3, bond:5, skill:3 }, result:'提案が通り、チーム全体の残業が減った。', log:'業務改善を提案し残業を減らす' },
+      fail:{ effect:{ bond:-5, joy:-3 }, result:'「今はそれどころじゃない」と流されてしまった。', log:'業務改善の提案が通らず' } } },
+    { label:'有給休暇を取ってリフレッシュ', effect:{ health:6, joy:5, money:-20 },
+      result:'しっかり休んで、また前を向けた。', log:'有給を取ってリフレッシュ' },
+  ],
+  tip:'年10日以上の有給休暇がある人は、年5日を取得させることが会社の義務になっています。' },
+{ id:'lp_hometown', pool:'life_partner', when:s=>!s.flags.married,
+  title:'地元に帰る？',
+  text:'親から「そろそろ地元に戻ってこないか」と言われた。',
+  options:[
+    { label:'地元に戻って転職する', jobChange:true, effect:{ bond:10, money:-50, joy:3, skill:-2 },
+      result:'家族や幼なじみの近くでの暮らしがはじまった。', log:'地元に戻って転職' },
+    { label:'今の場所でがんばる', effect:{ skill:4, joy:3, bond:-2 },
+      result:'自分で選んだ場所で、もう少し挑戦したい。', log:'今の場所で働き続ける' },
+    { label:'帰省の回数を増やす', effect:{ bond:5, money:-30 },
+      result:'年に数回の帰省が、親との大切な時間になった。', log:'帰省を増やす' },
+  ] },
+{ id:'fam_dual', pool:'family', when:s=>s.flags.married, weight:0.8,
+  title:'共働き、どうする？',
+  text:'二人とも仕事が忙しくなってきた。家のことをどう分担する？',
+  options:[
+    { label:'二人ともフルタイムで働き続ける', effect:{ money:100, health:-5, bond:2 },
+      result:'収入は安定。家事は家電と外部サービスでなんとか。', log:'共働きを続ける' },
+    { label:'自分が時短勤務にして家庭を中心に', effect:{ money:-80, bond:12, skill:-4, joy:4 },
+      result:'家族との時間が増えた。キャリアのペースは少し落ちた。', log:'時短勤務で家庭中心に' },
+    { label:'パートナーに家庭を中心にしてもらう', effect:{ money:-30, bond:4, skill:5 },
+      result:'仕事に打ち込めるが、パートナーへの感謝を忘れずに。', log:'パートナーが家庭を中心に' },
+  ],
+  tip:'育児・介護のための短時間勤務制度は、法律で会社に整備が義務づけられています。' },
+{ id:'cp_abroad', pool:'career_path', careers:['pharma','food','cosme','cro','other'],
+  title:'海外赴任の辞令',
+  text:'海外拠点の立ち上げメンバーとして、3年間の赴任を打診された。',
+  options:[
+    { label:'行く', effect:{ skill:10, money:120, bond:-8, joy:5 },
+      result:'言葉も文化も違う中での仕事。大変だが、世界が広がった。', log:'海外赴任' },
+    { label:'家族の事情を話して断る', effect:{ bond:4, joy:-3 },
+      result:'今の暮らしを守った。会社も理解してくれた。', log:'海外赴任を断る' },
+    { label:'国内から現地をサポートする役を申し出る', effect:{ skill:5, bond:3, health:-3 },
+      result:'時差に苦労しながらも、オンラインで現地を支えた。', log:'国内から海外拠点を支援' },
+  ] },
+{ id:'ml_volunteer', pool:'midlife', when:s=>s.career!=='retired',
+  title:'災害ボランティアの募集',
+  text:'大きな地震があった地域で、ボランティアを募集している。',
+  options:[
+    { label:'休暇を取って現地へ行く', effect:{ bond:10, joy:8, health:-5, money:-20 },
+      result:'泥かきで体はくたくた。でも「ありがとう」の言葉が忘れられない。', log:'災害ボランティアに参加' },
+    { label:'寄付で支援する', effect:{ money:-30, joy:3 },
+      result:'自分にできる形で支援した。', log:'被災地に寄付' },
+    { label:'職場で支援物資を集める', effect:{ bond:6, joy:4 },
+      result:'呼びかけに多くの同僚が応えてくれた。', log:'職場で支援物資を集める' },
+  ] },
+{ id:'care_partner', pool:'care', when:s=>s.flags.married,
+  title:'パートナーの入院',
+  text:'パートナーが病気で入院することになった。退院後もしばらく療養が必要だ。',
+  options:[
+    { label:'仕事を調整して看病する', effect:{ money:-100, bond:12, health:-5, skill:-2 },
+      result:'そばにいられたことが、二人にとって大きな支えになった。', log:'仕事を調整してパートナーを看病' },
+    { label:'家事代行などのサービスに頼る', effect:{ money:-150, bond:5 },
+      result:'無理をしすぎず、二人で乗り切った。', log:'サービスを使って療養を支える' },
+    { label:'職場に事情を話して相談する', roll:{ stat:'bond', base:0.55,
+      success:{ effect:{ bond:10, money:-50 }, result:'同僚がフォローしてくれ、看病と仕事を両立できた。', log:'職場の協力で看病と仕事を両立' },
+      fail:{ effect:{ health:-8, joy:-5, money:-50 }, result:'理解を得られず、一人で抱え込むことに…。', log:'看病と仕事の両立に苦しむ' } } },
+  ] },
+{ id:'hl_sleep', pool:'health',
+  title:'眠れない夜が続く',
+  text:'夜中に何度も目が覚める。昼間も集中できない。',
+  options:[
+    { label:'医療機関やカウンセリングに相談する', effect:{ health:12, money:-20, joy:4 },
+      result:'相談してよかった。少しずつ眠れるようになった。', log:'専門家に相談して不眠を改善' },
+    { label:'趣味や運動で気分転換する', effect:{ joy:6, health:4 },
+      result:'気分転換で、だいぶ楽になった。', log:'趣味と運動で気分転換' },
+    { label:'お酒でまぎらわす', effect:{ health:-10, joy:2 },
+      result:'その場はしのげても、体には負担がたまっていく。', log:'お酒で不眠をまぎらわす' },
+  ],
+  tip:'睡眠の不調が続くときは、早めに医療機関や相談窓口に相談しましょう。お酒は眠りを浅くします。' },
+{ id:'lc_newbiz', pool:'late_career', careers:['pharma','food','cosme','cro','other'],
+  title:'社内の新規事業公募',
+  text:'会社が新規事業のアイデアを募集している。年齢制限はない。',
+  options:[
+    { label:'自分で応募する', roll:{ stat:'skill', base:0.45,
+      success:{ effect:{ joy:12, skill:6, money:50 }, result:'採択！50代で新しい事業の責任者に。', log:'新規事業の責任者に' },
+      fail:{ effect:{ joy:-4, skill:3 }, result:'不採択。でも、考えたことは無駄にならない。', log:'新規事業公募に挑戦' } } },
+    { label:'若手の応募を支える', effect:{ bond:8, joy:5 },
+      result:'若手のアイデアが採択された。陰の立役者だ。', log:'若手の新規事業を支援' },
+    { label:'今の仕事に専念する', effect:{ skill:2, health:2 },
+      result:'目の前の仕事を、確実にやりとげる。', log:'今の仕事に専念' },
+  ] },
+{ id:'pr_home', pool:'pre_retire',
+  title:'実家をどうする？',
+  text:'親が施設に入り、実家が空き家になった。',
+  options:[
+    { label:'実家に移り住む', effect:{ bond:6, money:100, joy:2 },
+      result:'懐かしい家で、新しい暮らしがはじまった。', log:'実家に移り住む' },
+    { label:'売却して老後資金にする', effect:{ money:500, bond:-3 },
+      result:'思い出の家を手放した。少しさみしい。', log:'実家を売却' },
+    { label:'地域の交流スペースとして貸し出す', effect:{ bond:8, joy:6, money:50 },
+      result:'実家が地域の人の集まる場所になった。', log:'実家を地域の交流スペースに' },
+  ],
+  tip:'空き家は管理しないと税負担や近隣トラブルの原因になります。早めに家族で話し合っておきましょう。' },
+
+{ id:'lg_lecture', pool:'luck_good', when:s=>s.stage>=4,
+  title:'講演を頼まれた', text:'あなたの経験を話してほしいと、母校から講演を頼まれた。',
+  effect:{ joy:8, skill:3, bond:4 } },
+{ id:'lg_neighbor', pool:'luck_good',
+  title:'ご近所さんに助けられた', text:'困っていたとき、近所の人が手を貸してくれた。',
+  effect:{ bond:8, joy:4 } },
+{ id:'ln_furusato', pool:'luck_normal',
+  title:'ふるさと納税を始める', text:'同僚にすすめられて、ふるさと納税を始めてみた。',
+  effect:{ money:10, joy:3 },
+  tip:'ふるさと納税は、寄付額のうち2,000円を超える分が、上限の範囲内で税金から差し引かれる制度です。' },
+{ id:'ln_sns', pool:'luck_normal',
+  title:'SNSで昔の友人とつながる', text:'SNSで、連絡が途絶えていた友人を見つけた。',
+  effect:{ bond:3, joy:2 } },
+{ id:'lb_bike', pool:'luck_bad',
+  title:'自転車で転んで骨折', text:'雨の日に自転車で転倒。腕を骨折してしまった。',
+  effect:{ health:-12, money:-20, joy:-3 } },
+{ id:'lb_prices', pool:'luck_bad',
+  title:'物価の上昇', text:'食料品も光熱費も値上がり。生活費がじわじわ増えている。',
+  effect:{ money:-80, joy:-2 } },
+{ id:'lb_pc', pool:'luck_bad',
+  title:'パソコンが壊れた', text:'パソコンが突然起動しなくなった。バックアップは…取っていなかった。',
+  effect:{ money:-20, skill:-2, joy:-4 },
+  tip:'大切なデータは、クラウドや外付けドライブなど複数の場所にバックアップしておきましょう。' },
+
+];
+
+// 結果画面の「考えてみよう」
+const QUESTIONS = [
+  'いちばん迷った選択はどれでしたか？ なぜそちらを選びましたか？',
+  '自分ではコントロールできない出来事（病気・災害・景気など）に、どんな備えができるでしょうか？',
+  '現実のあなたが大事にしたいものは、ゲームの結果と同じでしたか？ 違ったなら、どこが違いましたか？',
+];
+
+// どの人にも表示する豆知識
+const BASE_TIPS = [
+  '公的年金（国民年金・厚生年金）は老後の収入の柱です。会社員や公務員は厚生年金に加入します。',
+  '退職金があるかどうか、いくらもらえるかは、勤め先によって大きく異なります。',
+];
+
+</script>
+<script>
+// =====================================================================
+//  ゲームロジック（画面に依存しない部分）
+// =====================================================================
+const STAT_KEYS = ['money','health','skill','bond','joy'];
+const META = {
+  money:  { label:'資産',     icon:'💰', color:'#c98a00' },
+  health: { label:'健康',     icon:'❤️', color:'#e5484d' },
+  skill:  { label:'スキル',   icon:'🔬', color:'#3e63dd' },
+  bond:   { label:'つながり', icon:'🤝', color:'#2f9e6b' },
+  joy:    { label:'充実感',   icon:'✨', color:'#8e4ec6' },
+};
+const MONEY_FULL = 4000;     // 資産 4000万円で満点（20点）
+const RETIRE_FULL_TENURE = 7; // 勤続 7ステージ（約35年）で退職金満額
+const CHILD_COST = 120;      // 子ども1人あたり・1ステージ（5年）の費用（万円）
+const SIDE_INCOME = 80;      // 副業の収入（1ステージ）
+
+let S = null;
+
+function newState(){
+  return {
+    phase:'title', name:'', value:null, stage:-1, sub:0,
+    career:null, careers:[],
+    stats:{ money:50, health:80, skill:30, bond:50, joy:50 },
+    flags:{ rank:0, tenure:0, children:0 },
+    queue:[], current:null, used:[], spin:null, pending:null, intro:null,
+    log:[], tips:[], luck:{ good:0, normal:0, bad:0 }, ethics:null, retire:null,
+  };
+}
+
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const rand = () => Math.random();
+
+function curAge(){
+  const st = STAGES[S.stage];
+  if (!st) return 22;
+  return Math.min(st.age[0] + S.sub, st.age[1] - 1);
+}
+
+function careerOk(ev){
+  if (ev.careers && !ev.careers.includes(S.career)) return false;
+  if (ev.when && !ev.when(S)) return false;
+  return true;
+}
+
+function pickWeighted(list){
+  const total = list.reduce((a,e)=>a+(e.weight||1),0);
+  let r = rand()*total;
+  for (const e of list){ r -= (e.weight||1); if (r<=0) return e; }
+  return list[list.length-1];
+}
+
+function pickEvent(pool){
+  let list = EVENTS.filter(e => e.pool===pool && careerOk(e));
+  const fresh = list.filter(e => !S.used.includes(e.id));
+  if (fresh.length) list = fresh;
+  else if (pool.startsWith('luck')) list = list; // ルーレットは使い回し可
+  else return null;
+  return list.length ? pickWeighted(list) : null;
+}
+
+function getEvent(id){ return EVENTS.find(e=>e.id===id); }
+
+// ---------- 職業 ----------
+function chooseCareer(id){
+  S.career = id;
+  S.careers = [id];
+  S.flags.tenure = 0;
+  addStats(CAREERS[id].init || {});
+}
+
+function payRetirement(notes){
+  const c = CAREERS[S.career];
+  if (!c || !c.retire || S.flags.tenure<=0) return 0;
+  const amt = Math.round(c.retire * Math.min(1, S.flags.tenure / RETIRE_FULL_TENURE));
+  S.stats.money += amt;
+  if (notes) notes.push(`${c.short}を退職。退職金 ${fmtMoney(amt)}`);
+  return amt;
+}
+
+function changeCareer(id, notes){
+  if (id === S.career) return;
+  payRetirement(notes);
+  S.career = id;
+  if (S.careers[S.careers.length-1] !== id) S.careers.push(id);
+  S.flags.tenure = 0;
+  S.flags.rank = 0;
+  notes.push(`${CAREERS[id].icon} ${CAREERS[id].name}の道へ`);
+}
+
+// ---------- パラメータ ----------
+function addStats(eff){
+  for (const k of STAT_KEYS){
+    if (eff[k]==null) continue;
+    if (k==='money') S.stats.money += eff[k];
+    else {
+      let d = eff[k];
+      // 高い値ほど上がりにくい（伸びしろの考え方）
+      if (d > 0) d = Math.max(1, Math.round(d * (1 - Math.max(0, S.stats[k] - 40) / 90)));
+      S.stats[k] = clamp(S.stats[k] + d, 0, 100);
+    }
+  }
+}
+
+function applyOutcome(o, notes){
+  if (!o) return;
+  if (o.jobChange && !CAREERS[S.career].noTenure){ payRetirement(notes); S.flags.tenure = 0; notes.push('転職。勤続年数はリセット'); }
+  if (o.effect){ addStats(typeof o.effect==='function' ? o.effect(S) : o.effect); }
+  if (o.set){
+    for (const [k,v] of Object.entries(o.set)){
+      S.flags[k] = v;
+      if (v===true) S.flags[k+'At'] = S.stage;
+    }
+  }
+  if (o.inc){
+    for (const [k,v] of Object.entries(o.inc)) S.flags[k] = Math.max(0, (S.flags[k]||0) + v);
+  }
+  if (o.career) changeCareer(o.career, notes);
+}
+
+function rollProb(r){
+  const v = r.stat ? S.stats[r.stat] : 50;
+  return clamp(r.base + (v - 50) / 150, 0.1, 0.9);
+}
+
+// 選択肢を解決して、結果画面用のデータを返す
+function resolve(ev, opt){
+  const before = { ...S.stats };
+  const notes = [];
+  let out = opt, roll = null;
+  if (opt.roll){
+    const p = rollProb(opt.roll);
+    const ok = rand() < p;
+    roll = { p, ok, stat: opt.roll.stat };
+    applyOutcome(opt, notes);           // 選択肢そのものの set（倫理フラグなど）
+    out = ok ? opt.roll.success : opt.roll.fail;
+  }
+  applyOutcome(out, notes);
+
+  const deltas = {};
+  for (const k of STAT_KEYS){ const d = S.stats[k]-before[k]; if (d) deltas[k]=d; }
+
+  const logText = out.log || opt.log || ev.log || `${ev.title}${opt.label ? '：'+opt.label : ''}`;
+  S.log.push({ age: curAge(), text: logText, pool: ev.pool });
+  S.sub++;
+
+  if (opt.ethics) S.ethics = { kind: opt.ethics, title: ev.title };
+  for (const t of [ev.tip, opt.tip, out.tip]) if (t && !S.tips.includes(t)) S.tips.push(t);
+
+  S.pending = {
+    eventId: ev.id, title: ev.title,
+    choice: opt.label || null,
+    result: out.result || opt.result || ev.result || ev.text,
+    deltas, roll, notes,
+  };
+}
+
+// ---------- ステージ進行 ----------
+function startStage(i){
+  S.stage = i; S.sub = 0; S.spin = null;
+  const st = STAGES[i];
+  const c = CAREERS[S.career];
+  const lines = [];
+  const before = { ...S.stats };
+
+  if (!c.noTenure) S.flags.tenure++;
+
+  let inc = c.income;
+  if (c.spread) inc += Math.round((rand()*2-1) * c.spread);
+  if (inc > 0) inc = Math.round(inc * (1 + 0.3 * S.flags.rank));
+  S.stats.money += inc;
+  lines.push({ icon:c.icon, text: inc>=0 ? `${c.short}としての収入（生活費を引いた貯金）` : `${c.short}の学費・生活費`, money:inc });
+
+  if (S.flags.side && !['retired'].includes(S.career)){
+    S.stats.money += SIDE_INCOME;
+    lines.push({ icon:'📝', text:'副業の収入', money:SIDE_INCOME });
+  }
+  if (S.flags.children>0 && S.flags.childAt!=null && i - S.flags.childAt < 4){
+    const cost = CHILD_COST * S.flags.children;
+    S.stats.money -= cost;
+    lines.push({ icon:'👶', text:'子育ての費用', money:-cost });
+  }
+  let decay = 0;
+  if (i>=4) decay = 3;
+  if (i>=6) decay = 5;
+  if (i>=8) decay = 6;
+  if (decay){
+    S.stats.health = clamp(S.stats.health - decay, 0, 100);
+    lines.push({ icon:'🕰️', text:'年齢とともに体力が少しずつ落ちる', stat:'health', value:-decay });
+  }
+
+  const deltas = {};
+  for (const k of STAT_KEYS){ const d = S.stats[k]-before[k]; if (d) deltas[k]=d; }
+  S.intro = { lines, deltas };
+
+  // このステージで起きることの順番
+  const q = [];
+  const fu = EVENTS.filter(e => e.pool==='followup' && !S.used.includes(e.id) && careerOk(e));
+  for (const e of fu){ if (rand() < (e.chance ?? 1)){ q.push({ type:'event', id:e.id }); break; } }
+  q.push({ type:'roulette' });
+  for (const p of st.pools) q.push({ type:'pool', pool:p });
+  S.queue = q;
+  S.phase = 'stageIntro';
+}
+
+// 次に進む。画面の種類（phase）を決める
+function advance(){
+  while (true){
+    if (!S.queue.length){
+      if (S.stage < STAGES.length-1) { startStage(S.stage+1); return; }
+      doRetire(); return;
+    }
+    const item = S.queue.shift();
+    if (item.type==='roulette'){ S.spin = null; S.phase = 'roulette'; return; }
+    let ev = null;
+    if (item.type==='pool') ev = pickEvent(item.pool);
+    if (item.type==='event') ev = getEvent(item.id);
+    if (!ev) continue;
+    enterEvent(ev);
+    return;
+  }
+}
+
+function enterEvent(ev){
+  if (!S.used.includes(ev.id)) S.used.push(ev.id);
+  S.current = ev.id;
+  if (!ev.options){ resolve(ev, ev); S.phase = 'result'; }
+  else S.phase = 'event';
+}
+
+function choose(idx){
+  const ev = getEvent(S.current);
+  resolve(ev, ev.options[idx]);
+  S.phase = 'result';
+}
+
+// ルーレット：1〜3 ピンチ / 4〜7 ふつう / 8〜10 チャンス
+function spinValue(){
+  const n = 1 + Math.floor(rand()*10);
+  const cat = n<=3 ? 'bad' : n<=7 ? 'normal' : 'good';
+  S.spin = { n, cat, done:false };
+  S.luck[cat]++;
+  return S.spin;
+}
+function afterSpin(){
+  const ev = pickEvent('luck_' + S.spin.cat);
+  S.spin.done = true;
+  if (ev) enterEvent(ev); else advance();
+}
+
+function doRetire(){
+  const notes = [];
+  const c = CAREERS[S.career];
+  const amt = payRetirement(notes);
+  S.retire = { amt, careerName: c.name, hadRetire: amt>0 };
+  S.log.push({ age:65, text: amt>0 ? `65歳。仕事を終える（退職金 ${fmtMoney(amt)}）` : '65歳。人生の一区切り', pool:'end' });
+  S.phase = 'retire';
+}
+
+// ---------- 結果 ----------
+function norm(st){
+  return {
+    money: clamp(st.money / MONEY_FULL * 100, 0, 100),
+    health: st.health, skill: st.skill, bond: st.bond, joy: st.joy,
+  };
+}
+function scoreOf(st){
+  const n = norm(st);
+  const parts = {};
+  let total = 0;
+  for (const k of STAT_KEYS){ parts[k] = Math.round(n[k] / 5); total += parts[k]; }
+  return { total, parts, n };
+}
+
+function lifeTitle(){
+  const { n } = scoreOf(S.stats);
+  const sorted = [...STAT_KEYS].sort((a,b)=>n[b]-n[a]);
+  const vals = STAT_KEYS.map(k=>n[k]);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  if (S.flags.fraudFound) return { t:'信頼を取り戻す道を歩んだ人', d:'一度の判断が、人生の流れを大きく変えた。それでも人生は続いていく。' };
+  if (S.careers.includes('startup')) return { t:'挑戦し続けた起業家', d:'安定よりも挑戦を選び、自分の手で道を切り開いた人生。' };
+  if (S.careers.includes('academia') && n.skill>=70) return { t:'知の探究者', d:'問いを追いかけ続け、知識を次の世代へつないだ人生。' };
+  if (min>=60) return { t:'バランスの達人', d:'お金も、健康も、人も、やりがいも。どれも大切に育てた人生。' };
+  if (max<50) return { t:'嵐を生き抜いた人', d:'思い通りにいかないことの多い人生。それでも最後まで歩き抜いた。' };
+  if (max - min >= 55) {
+    const k = sorted[0];
+    return { t:`「${META[k].label}」一点突破の人`, d:`${META[k].label}にすべてを注いだ人生。その分、手放したものもあった。` };
+  }
+  switch (sorted[0]){
+    case 'money':  return { t:'コツコツ積み上げた堅実家', d:'着実に働き、着実に蓄えた。将来への備えは万全だ。' };
+    case 'health': return { t:'心身しなやかな人', d:'無理をしすぎず、自分を大切にした。元気であることは何よりの財産。' };
+    case 'skill':  return { t:'道を極めた専門家', d:'学び続け、腕を磨き続けた。あなたにしかできない仕事がある。' };
+    case 'bond':   return S.flags.children>0
+                    ? { t:'家族と歩んだ人', d:'家族や仲間との時間を何よりも大切にした人生。' }
+                    : { t:'人とつながり続けた人', d:'まわりにはいつも誰かがいた。支え、支えられた人生。' };
+    case 'joy':    return { t:'やりたいことを生きた人', d:'「好き」や「やりがい」を軸に選び続けた人生。' };
+  }
+}
+
+function feedback(){
+  const { n } = scoreOf(S.stats);
+  const sorted = [...STAT_KEYS].sort((a,b)=>n[b]-n[a]);
+  const out = [];
+
+  // 1. 最初に大事にしたかったもの
+  if (S.value){
+    const rank = sorted.indexOf(S.value);
+    const L = META[S.value].label;
+    let msg;
+    if (rank===0) msg = `最初に「${VALUES[S.value]}」をいちばん大事にしたいと答えました。そのとおり、「${L}」は5つの中でいちばん高い結果に。自分の軸を守り抜いた人生でした。`;
+    else if (rank<=2) msg = `最初に「${VALUES[S.value]}」をいちばん大事にしたいと答えました。結果、「${L}」は5つの中で${rank+1}番目。大切にしつつも、ほかのものとの間で揺れた人生でした。`;
+    else msg = `最初に「${VALUES[S.value]}」をいちばん大事にしたいと答えましたが、結果は5つの中で${rank+1}番目。どの選択や出来事が影響したのか、年表をふりかえってみましょう。`;
+    out.push({ h:'🎯 最初の答えと、実際の人生', p:msg });
+  }
+
+  // 2. 伸びたもの・手放したもの
+  const top = META[sorted[0]].label, bottom = META[sorted[4]].label;
+  out.push({ h:'⚖️ 何を選び、何を手放したか',
+    p:`いちばん伸びたのは「${top}」、いちばん低かったのは「${bottom}」。何かを選ぶことは、別の何かを選ばないことでもあります。` });
+
+  // 3. 進路
+  const path = S.careers.map(id=>CAREERS[id].short);
+  if (path.length===1) out.push({ h:'🧭 キャリア', p:`「${path[0]}」として、ひとつの道を歩き続けました。続けることで得られる信頼や専門性、退職金があります。` });
+  else out.push({ h:'🧭 キャリア', p:`${path.join(' → ')} と、${path.length-1}回道を変えました。環境を変えることで得られる成長もあれば、手放すもの（人間関係・勤続年数）もあります。` });
+
+  // 4. 倫理
+  if (S.ethics){
+    let p;
+    if (S.ethics.kind==='comply' && S.flags.fraudFound) p = `「${S.ethics.title}」で、まわりに合わせる選択をし、後に発覚しました。その場で得たものより、失ったもののほうがずっと大きかったはずです。`;
+    else if (S.ethics.kind==='comply') p = `「${S.ethics.title}」で、まわりに合わせる選択をしました。今回は発覚しませんでしたが、それは運がよかっただけかもしれません。もし発覚していたら、どうなっていたでしょう。`;
+    else if (S.ethics.kind==='speak') p = `「${S.ethics.title}」で、自分の言葉で正しいことを伝えました。関係がぎくしゃくするリスクがあっても、筋を通すことは長い目で信頼につながります。`;
+    else p = `「${S.ethics.title}」で、組織の正式なルートを使いました。一人で抱え込まず、仕組みを頼るのも大切な判断です。`;
+    out.push({ h:'⚖️ 仕事の倫理', p });
+  }
+
+  // 5. 運
+  const { good, bad } = S.luck;
+  out.push({ h:'🎲 運とのつきあい方',
+    p:`ルーレットはチャンス${good}回・ピンチ${bad}回。運は選べません。でも、健康・スキル・つながりがあると、ピンチのときの選択肢が増え、成功しやすくなります（このゲームでも、成功率はパラメータで変わっていました）。` });
+
+  return out;
+}
+
+function fmtMoney(v){
+  v = Math.round(v);
+  const s = Math.abs(v).toLocaleString('ja-JP');
+  return (v<0 ? '−' : '') + s + '万円';
+}
+
+// =====================================================================
+//  画面（UI）
+// =====================================================================
+const SAVE_KEY = 'biolife_save_v1';
+const app = document.getElementById('app');
+
+function save(){
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e){}
+}
+function loadSave(){
+  try { const t = localStorage.getItem(SAVE_KEY); return t ? JSON.parse(t) : null; } catch(e){ return null; }
+}
+function clearSave(){ try { localStorage.removeItem(SAVE_KEY); } catch(e){} }
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function go(fn){ return () => { fn(); save(); render(); }; }
+
+function render(){
+  const f = {
+    title:renderTitle, value:renderValue, career:renderCareer,
+    stageIntro:renderStageIntro, roulette:renderRoulette, event:renderEvent,
+    result:renderResult, retire:renderRetire, ending:renderEnding,
+  }[S.phase];
+  f();
+  window.scrollTo(0,0);
+}
+
+// ---------- 共通パーツ ----------
+function statBar(){
+  const n = norm(S.stats);
+  const cells = STAT_KEYS.map(k=>{
+    const v = k==='money' ? shortMoney(S.stats.money) : S.stats[k];
+    return `<div class="stat" style="--c:${META[k].color}">
+      <div class="stat-top"><span class="stat-ic">${META[k].icon}</span><span class="stat-v">${v}</span></div>
+      <div class="stat-bar"><i style="width:${n[k]}%"></i></div>
+      <div class="stat-l">${META[k].label}</div></div>`;
+  }).join('');
+  return `<div class="stats">${cells}</div>`;
+}
+function shortMoney(v){
+  v = Math.round(v);
+  if (Math.abs(v) >= 10000) return (v/10000).toFixed(1) + '億';
+  return (v<0?'−':'') + Math.abs(v).toLocaleString('ja-JP') + '万';
+}
+function topBar(){
+  const st = STAGES[S.stage];
+  const c = CAREERS[S.career];
+  const dots = STAGES.map((_,i)=>`<i class="${i<S.stage?'done':i===S.stage?'now':''}"></i>`).join('');
+  return `<header class="top">
+    <div class="top-row">
+      <div class="age">${st ? `${st.age[0]}<small>〜${st.age[1]-1}歳</small>` : '65<small>歳</small>'}</div>
+      <div class="job">${c ? `${c.icon} ${esc(c.name)}` : ''}</div>
+    </div>
+    <div class="dots">${dots}</div>
+    ${statBar()}
+  </header>`;
+}
+function deltaChips(d){
+  const ks = STAT_KEYS.filter(k=>d[k]);
+  if (!ks.length) return '<p class="muted">パラメータの変化はなし</p>';
+  return `<div class="chips">${ks.map(k=>{
+    const v = d[k], up = v>0;
+    const txt = k==='money' ? (up?'+':'') + fmtMoney(v) : (up?'+':'') + v;
+    return `<span class="chip ${up?'up':'down'}">${META[k].icon} ${META[k].label} <b>${txt}</b></span>`;
+  }).join('')}</div>`;
+}
+function btn(label, cls='primary', id='next'){ return `<button class="btn ${cls}" id="${id}">${label}</button>`; }
+
+// ---------- タイトル ----------
+function renderTitle(){
+  const saved = loadSave();
+  const canResume = saved && saved.phase && !['title','ending'].includes(saved.phase);
+  app.innerHTML = `
+  <div class="hero">
+    <div class="badge">BIO 4年制 3年 ／ キャリアの授業</div>
+    <h1 class="logo">バイオ<br>人生ゲーム</h1>
+    <p class="lead">卒業してから65歳まで。<br>あなたの選択と、めぐり合わせで<br>人生をつくっていこう。</p>
+    <ul class="howto">
+      <li><b>⏱</b>約20分</li><li><b>🗺️</b>9つのステージ</li><li><b>🎡</b>選択とルーレット</li><li><b>📊</b>最後に人生スコア</li>
+    </ul>
+    <label class="field"><span>ニックネーム</span>
+      <input id="name" maxlength="12" placeholder="例：バイオ太郎" value="${esc(S.name)}" autocomplete="off"></label>
+    ${btn('はじめる','primary','start')}
+    ${canResume ? btn('つづきから','ghost','resume') : ''}
+    <p class="fine">※ このゲームの数値はフィクションです。実際の収入や制度とは異なります。</p>
+  </div>`;
+  document.getElementById('start').onclick = () => {
+    const name = document.getElementById('name').value.trim() || 'あなた';
+    S = newState(); S.name = name; S.phase = 'value'; save(); render();
+  };
+  if (canResume) document.getElementById('resume').onclick = () => { S = rehydrate(saved); render(); };
+}
+function rehydrate(o){ const s = newState(); return Object.assign(s, o); }
+
+// ---------- 大事にしたいもの ----------
+function renderValue(){
+  app.innerHTML = `
+  <div class="screen">
+    <p class="step">はじめに</p>
+    <h2>${esc(S.name)}さんが、人生で<br>いちばん大事にしたいものは？</h2>
+    <p class="muted">直感でひとつ選んでください。ゲームの結果には影響しません。最後に「答え合わせ」をします。</p>
+    <div class="list">
+      ${STAT_KEYS.map(k=>`<button class="opt" data-k="${k}" style="--c:${META[k].color}">
+        <span class="opt-ic">${META[k].icon}</span><span class="opt-t">${VALUES[k]}</span></button>`).join('')}
+    </div>
+  </div>`;
+  app.querySelectorAll('.opt').forEach(b => b.onclick = () => { S.value = b.dataset.k; S.phase = 'career'; save(); render(); });
+}
+
+// ---------- 進路 ----------
+function renderCareer(){
+  const ids = Object.keys(CAREERS).filter(k=>CAREERS[k].start);
+  app.innerHTML = `
+  <div class="screen">
+    <p class="step">21歳・卒業前</p>
+    <h2>卒業後の進路を選ぼう</h2>
+    <div class="list">
+      ${ids.map(id=>{
+        const c = CAREERS[id];
+        const stars = Object.entries(c.stars).map(([k,v])=>`<span>${k}<b>${'★'.repeat(v)}<em>${'★'.repeat(5-v)}</em></b></span>`).join('');
+        return `<button class="card-opt" data-id="${id}">
+          <div class="co-head"><span class="co-ic">${c.icon}</span><span class="co-name">${esc(c.name)}</span></div>
+          <p class="co-desc">${esc(c.desc)}</p>
+          <div class="co-stars">${stars}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <div class="sticky-bottom">${btn('この道に進む','primary','go')}</div>
+  </div>`;
+  let sel = null;
+  const goBtn = document.getElementById('go');
+  goBtn.disabled = true;
+  app.querySelectorAll('.card-opt').forEach(b => b.onclick = () => {
+    app.querySelectorAll('.card-opt').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); sel = b.dataset.id; goBtn.disabled = false;
+    goBtn.textContent = `${CAREERS[sel].short}の道に進む`;
+  });
+  goBtn.onclick = () => {
+    if (!sel) return;
+    chooseCareer(sel);
+    S.log.push({ age:22, text:`卒業。${CAREERS[sel].name}の道へ`, pool:'start' });
+    startStage(0); save(); render();
+  };
+}
+
+// ---------- ステージ開始 ----------
+function renderStageIntro(){
+  const st = STAGES[S.stage];
+  const lines = S.intro.lines.map(l => `<li><span>${l.icon}</span><span class="li-t">${esc(l.text)}</span>
+    <b class="${(l.money ?? l.value) < 0 ? 'neg':'pos'}">${l.money!=null ? ((l.money>0?'+':'') + fmtMoney(l.money)) : ((l.value>0?'+':'') + l.value + ' ' + META[l.stat].label)}</b></li>`).join('');
+  app.innerHTML = `${topBar()}
+  <div class="screen">
+    <div class="stage-hero">
+      <p class="step">STAGE ${S.stage+1} / ${STAGES.length}</p>
+      <h2 class="big-age">${st.age[0]}〜${st.age[1]-1}歳</h2>
+      <p class="stage-name">${esc(st.name)}</p>
+    </div>
+    <div class="card">
+      <h3>この5年間のくらし</h3>
+      <ul class="ledger">${lines}</ul>
+    </div>
+    ${btn('この5年間をはじめる')}
+  </div>`;
+  document.getElementById('next').onclick = go(advance);
+}
+
+// ---------- ルーレット ----------
+const WHEEL_COLORS = { bad:['#f2b8b5','#eaa09c'], normal:['#cfe3dc','#b9d6cc'], good:['#ffd98a','#ffcb5c'] };
+function wheelSVG(){
+  const R = 120, cx = 130, cy = 130;
+  let s = '';
+  for (let k=1; k<=10; k++){
+    const a0 = (k-1)*36 - 90, a1 = k*36 - 90;
+    const p0 = [cx + R*Math.cos(a0*Math.PI/180), cy + R*Math.sin(a0*Math.PI/180)];
+    const p1 = [cx + R*Math.cos(a1*Math.PI/180), cy + R*Math.sin(a1*Math.PI/180)];
+    const cat = k<=3?'bad':k<=7?'normal':'good';
+    const col = WHEEL_COLORS[cat][k%2];
+    const am = (a0+a1)/2*Math.PI/180;
+    const tx = cx + R*0.72*Math.cos(am), ty = cy + R*0.72*Math.sin(am);
+    s += `<path d="M${cx},${cy} L${p0[0]},${p0[1]} A${R},${R} 0 0 1 ${p1[0]},${p1[1]} Z" fill="${col}" stroke="#fff" stroke-width="2"/>`;
+    s += `<text x="${tx}" y="${ty}" text-anchor="middle" dominant-baseline="central" transform="rotate(${(a0+a1)/2+90} ${tx} ${ty})" class="wnum">${k}</text>`;
+  }
+  s += `<circle cx="${cx}" cy="${cy}" r="22" fill="#fff" stroke="#23262b" stroke-width="3"/>`;
+  return `<svg viewBox="0 0 260 260" class="wheel-svg">${s}</svg>`;
+}
+function renderRoulette(){
+  app.innerHTML = `${topBar()}
+  <div class="screen center">
+    <p class="step">ルーレット</p>
+    <h2>この時期、何が起きる？</h2>
+    <div class="legend"><span class="lg bad">1〜3 ピンチ</span><span class="lg normal">4〜7 ふつう</span><span class="lg good">8〜10 チャンス</span></div>
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel">${wheelSVG()}</div>
+    </div>
+    <div id="spinout" class="spinout"></div>
+    ${btn('ルーレットを回す','primary','spin')}
+  </div>`;
+  const b = document.getElementById('spin');
+  // 回した直後に再読み込みされた場合は、結果を表示したところから
+  if (S.spin && !S.spin.done){
+    const sp = S.spin;
+    document.getElementById('wheel').style.cssText = `transition:none;transform:rotate(${360-((sp.n-1)*36+18)}deg)`;
+    const label = { bad:'ピンチ！', normal:'ふつうの日々', good:'チャンス！' }[sp.cat];
+    document.getElementById('spinout').innerHTML = `<div class="spin-res ${sp.cat}"><b>${sp.n}</b>${label}</div>`;
+    b.textContent = '何が起きた？';
+    b.onclick = go(afterSpin);
+    return;
+  }
+  b.onclick = () => {
+    b.disabled = true;
+    const sp = spinValue(); save();
+    const center = (sp.n-1)*36 + 18;
+    const jitter = (Math.random()*2-1)*12;
+    const rot = 360*6 - center + jitter;
+    const w = document.getElementById('wheel');
+    requestAnimationFrame(()=>{ w.style.transform = `rotate(${rot}deg)`; });
+    setTimeout(() => {
+      const label = { bad:'ピンチ！', normal:'ふつうの日々', good:'チャンス！' }[sp.cat];
+      document.getElementById('spinout').innerHTML = `<div class="spin-res ${sp.cat}"><b>${sp.n}</b>${label}</div>`;
+      b.textContent = '何が起きた？'; b.disabled = false;
+      b.onclick = go(afterSpin);
+    }, 3300);
+  };
+}
+
+// ---------- イベント ----------
+function luckBanner(){
+  const ev = getEvent(S.current);
+  if (!ev || !ev.pool.startsWith('luck') || !S.spin) return '';
+  const label = { bad:'ピンチ', normal:'ふつう', good:'チャンス' }[S.spin.cat];
+  return `<div class="luck ${S.spin.cat}">🎡 ルーレット ${S.spin.n} ・ ${label}</div>`;
+}
+function renderEvent(){
+  const ev = getEvent(S.current);
+  const opts = ev.options.map((o,i)=>{
+    let hint = '';
+    if (o.roll){
+      hint = o.roll.stat
+        ? `<span class="hint">🎲 運と${META[o.roll.stat].icon}${META[o.roll.stat].label}しだい</span>`
+        : `<span class="hint">🎲 運しだい</span>`;
+    }
+    if (o.career) hint += `<span class="hint">${CAREERS[o.career].icon} 進路が変わる</span>`;
+    return `<button class="choice" data-i="${i}"><span class="ch-t">${esc(o.label)}</span>${hint}</button>`;
+  }).join('');
+  app.innerHTML = `${topBar()}
+  <div class="screen">
+    ${luckBanner()}
+    <div class="card event">
+      <p class="ev-age">${curAge()}歳ごろ</p>
+      <h2>${esc(ev.title)}</h2>
+      <p class="ev-text">${esc(ev.text)}</p>
+    </div>
+    <p class="ask">どうする？</p>
+    <div class="list">${opts}</div>
+  </div>`;
+  app.querySelectorAll('.choice').forEach(b => b.onclick = () => { choose(+b.dataset.i); save(); render(); });
+}
+
+// ---------- 結果 ----------
+function renderResult(){
+  const p = S.pending;
+  const ev = getEvent(p.eventId);
+  const rollTxt = p.roll ? `<div class="roll ${p.roll.ok?'ok':'ng'}">🎲 成功率 約${Math.round(p.roll.p*100)}% → <b>${p.roll.ok?'成功！':'うまくいかなかった…'}</b>
+      ${p.roll.stat ? `<small>${META[p.roll.stat].label}が高いほど成功しやすい</small>` : ''}</div>` : '';
+  const notes = p.notes.length ? `<ul class="notes">${p.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>` : '';
+  const isLuckNoOpt = !ev.options;
+  app.innerHTML = `${topBar()}
+  <div class="screen">
+    ${isLuckNoOpt ? luckBanner() : ''}
+    <div class="card result">
+      <h2>${esc(p.title)}</h2>
+      ${isLuckNoOpt ? `<p class="ev-text">${esc(ev.text)}</p>` : `<p class="picked">▶ ${esc(p.choice)}</p>`}
+      ${rollTxt}
+      ${p.result && p.result!==ev.text ? `<p class="res-text">${esc(p.result)}</p>` : ''}
+      ${deltaChips(p.deltas)}
+      ${notes}
+    </div>
+    ${btn('つぎへ')}
+  </div>`;
+  document.getElementById('next').onclick = go(advance);
+}
+
+// ---------- 定年 ----------
+function renderRetire(){
+  const r = S.retire;
+  app.innerHTML = `${topBar()}
+  <div class="screen center">
+    <p class="step">GOAL</p>
+    <h2 class="big-age">65歳</h2>
+    <p class="stage-name">ひとつの人生の区切り</p>
+    <div class="card">
+      ${r.hadRetire
+        ? `<p>${esc(r.careerName)}を退職。<br>退職金 <b class="pos">${fmtMoney(r.amt)}</b> を受け取りました。</p>`
+        : `<p>会社員の退職金はありませんが、ここまで自分の道を歩いてきました。</p>`}
+      <p class="muted">これからは公的年金が、くらしの柱になります。</p>
+    </div>
+    ${btn('人生をふりかえる')}
+  </div>`;
+  document.getElementById('next').onclick = () => { S.phase = 'ending'; save(); render(); };
+}
+
+// ---------- エンディング ----------
+function radarSVG(n){
+  const cx=130, cy=118, R=82;
+  const pt = (i, r) => { const a = (-90 + i*72) * Math.PI/180; return [cx + r*Math.cos(a), cy + r*Math.sin(a)]; };
+  let grid = '';
+  for (const f of [0.25,0.5,0.75,1]){
+    grid += `<polygon points="${STAT_KEYS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#e3ddcf" stroke-width="1"/>`;
+  }
+  let axes = '', labels = '';
+  STAT_KEYS.forEach((k,i)=>{
+    const [x,y] = pt(i,R);
+    axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#e3ddcf"/>`;
+    const [lx,ly] = pt(i,R+22);
+    labels += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" class="rl">${META[k].icon}${META[k].label}</text>`;
+  });
+  const poly = STAT_KEYS.map((k,i)=>pt(i, R*Math.max(4,n[k])/100).join(',')).join(' ');
+  const dots = STAT_KEYS.map((k,i)=>{ const [x,y]=pt(i,R*Math.max(4,n[k])/100); return `<circle cx="${x}" cy="${y}" r="4" fill="${META[k].color}"/>`; }).join('');
+  return `<svg viewBox="0 0 260 240" class="radar">${grid}${axes}<polygon points="${poly}" fill="rgba(15,118,110,.22)" stroke="#0f766e" stroke-width="2.5"/>${dots}${labels}</svg>`;
+}
+function renderEnding(){
+  const sc = scoreOf(S.stats);
+  const title = lifeTitle();
+  const fb = feedback();
+  const path = S.careers.map(id=>`${CAREERS[id].icon}${CAREERS[id].short}`).join(' → ');
+  const tips = [...S.tips, ...BASE_TIPS].slice(0,6);
+  const vals = STAT_KEYS.map(k=>`<div class="rv" style="--c:${META[k].color}">
+      <span>${META[k].icon}</span><b>${k==='money'?shortMoney(S.stats.money):S.stats[k]}</b><small>${META[k].label}</small><em>${sc.parts[k]}点</em></div>`).join('');
+
+  app.innerHTML = `
+  <div class="screen ending">
+    <div class="result-card" id="shot">
+      <div class="rc-head">
+        <p class="rc-name">${esc(S.name)}さんの人生</p>
+        <p class="rc-kicker">人生の称号</p>
+        <h2 class="rc-title">${esc(title.t)}</h2>
+        <p class="rc-desc">${esc(title.d)}</p>
+      </div>
+      <div class="rc-score"><span class="num">${sc.total}</span><span class="unit">点</span><small>人生スコア（100点満点）</small></div>
+      ${radarSVG(sc.n)}
+      <div class="rv-row">${vals}</div>
+      <p class="rc-path">${path}</p>
+      <p class="rc-foot">バイオ人生ゲーム</p>
+    </div>
+    <p class="shot-note">📸 ここまでをスクショしてシェアしよう</p>
+    <p class="fine center">スコアは5つの軸（各20点）の合計です。人生の価値そのものではありません。<br>資産は${MONEY_FULL.toLocaleString()}万円で20点として計算しています。</p>
+
+    <section class="sec"><h3>ふりかえり</h3>
+      ${fb.map(f=>`<div class="fb"><h4>${f.h}</h4><p>${esc(f.p)}</p></div>`).join('')}
+    </section>
+
+    <section class="sec"><h3>人生年表</h3>
+      <ol class="timeline">${S.log.map(l=>`<li><span class="tl-age">${l.age}歳</span><span class="tl-t">${esc(l.text)}</span></li>`).join('')}</ol>
+    </section>
+
+    <section class="sec"><h3>知っておきたいこと</h3>
+      <ul class="tips">${tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+    </section>
+
+    <section class="sec q"><h3>考えてみよう</h3>
+      <ol>${QUESTIONS.map(q=>`<li>${esc(q)}</li>`).join('')}</ol>
+    </section>
+
+    ${btn('もう一度、別の人生を生きる','primary','again')}
+  </div>`;
+  document.getElementById('again').onclick = () => {
+    const name = S.name; clearSave(); S = newState(); S.name = name; render();
+  };
+}
+
+// ---------- 起動 ----------
+S = newState();
+render();
+
+</script>
+</body>
+</html>
